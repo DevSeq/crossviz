@@ -2,8 +2,8 @@
   (:require
    [figwheel.client :as fw]))
 
-(defonce world-state (atom {}))
- 
+(enable-console-print!)
+
 (defn geom 
    ([x y z]
       {:x x :y y :z z})
@@ -22,17 +22,11 @@
 (defn add-t! [t g]
   (swap! world-state (fn [st] (add-t* t st g))))
 
-(add-watch world-state :world-watch 
-  (fn [_ _ _ n]   
-    (to-world n)
-   ))
-
 (def add-line!   (partial add-t* :line))
 (def add-vector! (partial add-t* :vector))
 (def add-plane!   (partial add-t* :plane))
 (def add-point!   (partial add-t* :point))
 
- 
 (defn list-of-objects [state]
   (mapcat 
    (fn [[g objs]] 
@@ -43,20 +37,13 @@
   (map geom-to (list-of-objects state))
 )
 
-
-
-; 
-;(defn geom-to-line [g] ...) ; => js/THREE object
-
-;(defn geom-to-vector [g] ...) ; => js/THREE object
-
 (defmulti geom-to first)
 
 (defn geom-to-vector [{:keys [x y z]}]
     (let [g (js/THREE.Geometry.)]
-      (.push (.vertices g) (js/THREE.Vector3. x y z))
-      (.push (.vertices g) (js/THREE.Vector3. 0 0 0))
-      (js/THREE.Line. g (js/THREE.LineBasicMaterial
+      (.push (.-vertices g) (js/THREE.Vector3. x y z))
+      (.push (.-vertices g) (js/THREE.Vector3. 0 0 0))
+      (js/THREE.Line. g (js/THREE.LineBasicMaterial.
                          #js {
                                :color      0x663399,
                                :opacity    0,
@@ -134,9 +121,6 @@
 ;)
 
 
-(defn geom [v]
-  (-> ProjectiveGeom v {}))
-
 (defn createCameraControls [camera domElement]
   (let [controls (js/THREE.TrackballControls. camera domElement)
         radius   3]
@@ -151,8 +135,6 @@
 	(set! (.-maxDistance           controls)  (* radius 20.0))
     controls)
 )
-
-(defn consolelog [msg] (.log js/console msg))
 
 (defn axis [v color]
   (let [geom (js/THREE.Geometry.)]
@@ -182,6 +164,8 @@
     container)
 )
 
+(defonce world-state (atom {}))
+
 (def world (atom (js.THREE.Object3D.)))
 (def animating (atom false))
 
@@ -189,11 +173,21 @@
   (.add @world obj)
 )
 
+(def scene (js/THREE.Scene.))
+
+(add-watch world-state :world-watch 
+  (fn [_ _ _ n]   
+    (.remove scene @world)
+    (reset! world (js.THREE.Object3D.))
+    (.add @world (axes 2.0))
+    (doseq [obj (to-world n)] (.add @world obj))
+    (.add scene @world)
+   ))
+
 (let [renderer  (js/THREE.WebGLRenderer. (clj->js {:antialias true}))
       container (prepareContainer (.getElementById js/document "container") renderer)
       width     (.-offsetWidth container)
       height    (.-offsetHeight container)
-      scene     (js/THREE.Scene.)
       camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 )
       light     (js/THREE.DirectionalLight.  0xffffff  1.5)
       light2    (js/THREE.DirectionalLight.  0xffffff  1.5)
@@ -217,7 +211,19 @@
 ;    (consolelog "hi there")
 )
 
-(add (axes 2.0))
+; (add (axes 2.0))
 ; (reset! animating true)
 
+; (def g1 (geom 1 2 3))
 
+(add-t! :vector (def g1 (geom 1 2 1)))
+(add-t! :vector (def g2 (geom -1 2 -1)))
+(add-t! :vector (def g3 (geom 1 -2 1)))
+
+; (add (geom-to-vector g1))
+
+;      (.push
+;       (.vertices
+;        g)
+;       (js/THREE.Vector3. x y z)
+;       )
