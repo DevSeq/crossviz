@@ -2,7 +2,11 @@
   (:require
    [figwheel.client :as fw]))
 
+(def univDiam 2)
+
 (enable-console-print!)
+
+(defn lh [x] (.log js/console x) x)
 
 (defn geom 
    ([x y z]
@@ -50,17 +54,33 @@
                                :linewidth  2
                              }))))
 
+(defn geom-to-plane [{:keys [x y z]}]
+  ; return a disc Object3D through 0,0,0
+  (let [v     (js/THREE.Vector3. x y z)
+        k     (js/THREE.Vector3. 0 0 1)
+        axis  (-> (js/THREE.Vector3.)
+                  (.crossVectors k v)
+                  (.normalize))
+        angle (-> k (.angleTo v))
+        R     (-> (js/THREE.Matrix4.)
+                  (.makeRotationAxis axis angle))
+        obj   (disc univDiam 0)]
+    (-> obj (.applyMatrix R))
+    obj
+))
+
+
 (defmethod geom-to :vector [[_ g]]
    (geom-to-vector g)
 )
 (defmethod geom-to :line [[_ g]]
    (geom-to-vector g)
 )
-(defmethod geom-to :plane [[_ g]]
+(defmethod geom-to :point [[_ g]]
    (geom-to-vector g)
 )
 (defmethod geom-to :plane [[_ g]]
-   (geom-to-vector g)
+   (geom-to-plane g)
 )
 
 
@@ -155,6 +175,30 @@
     obj)
 )
 
+(def PI (.-PI js/Math))
+(def cos (.-cos js/Math))
+(def sin (.-sin js/Math))
+(def sqrt (.-sqrt js/Math))
+
+(defn disc [r z]
+   (let [g (js/THREE.Geometry.)
+         N 60]
+       (.push (.-vertices g) (js/THREE.Vector3. 0 0 z))
+       (doseq [i (range 0 (+ N 1))]
+         (let [a (/ (* 2 PI i) N)]
+           (.push (.-vertices g) (js/THREE.Vector3. (* r (cos a)) (* r (sin a)) z))
+           (.push (.-faces g) (js/THREE.Face3. 0 i (if (< i N) (+ i 1) 1)))))
+       (.computeBoundingSphere g)
+       (.computeFaceNormals g)
+       (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
+                                                          :color 0xffffff,
+                                                          :transparent true,
+                                                          :side (.-DoubleSide js/THREE),
+                                                          :opacity 0.5
+                                                          }))))
+
+
+
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
 ;; exist (and be properly sized) later on when needed (e.g. by createCameraControls)
@@ -180,10 +224,15 @@
     (.remove scene @world)
     (reset! world (js.THREE.Object3D.))
     (.add @world (axes 2.0))
+    (.add @world (disc
+                  (sqrt (- (* univDiam univDiam) 1))
+                        1)
+                  )
     (doseq [obj (to-world n)] (.add @world obj))
     (.add scene @world)
    ))
 
+(defonce foo
 (let [renderer  (js/THREE.WebGLRenderer. (clj->js {:antialias true}))
       container (prepareContainer (.getElementById js/document "container") renderer)
       width     (.-offsetWidth container)
@@ -210,15 +259,21 @@
      (run)
 ;    (consolelog "hi there")
 )
+)
 
 ; (add (axes 2.0))
 ; (reset! animating true)
 
 ; (def g1 (geom 1 2 3))
 
-(add-t! :vector (def g1 (geom 1 2 1)))
-(add-t! :vector (def g2 (geom -1 2 -1)))
-(add-t! :vector (def g3 (geom 1 -2 1)))
+(def g1 (geom 1 2 1))
+(def g2 (geom 1 -2 1))
+
+(add-t! :vector g1)
+(add-t! :plane g1)
+(add-t! :vector g2)
+;(add-t! :vector (def g2 (geom -1 2 -1)))
+;(add-t! :vector (def g3 (geom 1 -2 1)))
 
 ; (add (geom-to-vector g1))
 
@@ -227,3 +282,16 @@
 ;        g)
 ;       (js/THREE.Vector3. x y z)
 ;       )
+
+; (println "discy wiscy")
+;(.log js/console (disc 2 1))
+
+(fw/watch-and-reload)
+
+; (fw/watch-and-reload  :jsload-callback (fn []
+;                                          ;; you would add this if you
+;                                          ;; have more than one file
+;                                          #_(reset! flap-state @flap-state)
+;                                          ))
+
+
