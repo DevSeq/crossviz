@@ -2,11 +2,18 @@
   (:require
    [figwheel.client :as fw]))
 
+(def PI   (.-PI js/Math))
+(def cos  (.-cos js/Math))
+(def sin  (.-sin js/Math))
+(def sqrt (.-sqrt js/Math))
+(def abs  (.-abs js/Math))
+
 (def univDiam 2)
 
 (enable-console-print!)
 
 (defn lh [x] (.log js/console x) x)
+(defn lnh[x] x)
 
 (defn geom 
    ([x y z]
@@ -69,12 +76,35 @@
     obj
 ))
 
+(defn geom-to-line [{:keys [x y z]}]
+  (let [g          (js/THREE.Geometry.)
+        A          (+ (* x x) (* y y))
+        [B C vert] (if (> (abs x) (abs y))
+                     [ (* 2 y z)                                                ; B
+                       (+ (* z z) (* x x (- 1 (* univDiam univDiam))))          ; C
+                       (fn [t] (js/THREE.Vector3. (/ (- (+ z (* y t))) x) t 1)) ; vert
+                       ]
+                     [ (* 2 x z)                                                  ; B
+                       (+ (* z z) (* y y (- 1 (* univDiam univDiam))))            ; C
+                       (fn [t] (js/THREE.Vector3. t  (/ (- (+ z (* x t))) y)  1)) ; vert
+                       ])
+        D          (sqrt (- (* B B) (* 4 A C)))
+        ]
+    (-> g (.-vertices) (.push (vert (/ (+ (- B) D) (* 2.0 A)))))
+    (-> g (.-vertices) (.push (vert (/ (- (- B) D) (* 2.0 A)))))
+    (js/THREE.Line. g (js/THREE.LineBasicMaterial. #js{
+                                                      :color     0x663399,
+                                                      :opacity   0,
+                                                      :linewidth 5
+                                   }))
+    )
+  )
 
 (defmethod geom-to :vector [[_ g]]
    (geom-to-vector g)
 )
 (defmethod geom-to :line [[_ g]]
-   (geom-to-vector g)
+   (geom-to-line g)
 )
 (defmethod geom-to :point [[_ g]]
    (geom-to-vector g)
@@ -175,10 +205,6 @@
     obj)
 )
 
-(def PI (.-PI js/Math))
-(def cos (.-cos js/Math))
-(def sin (.-sin js/Math))
-(def sqrt (.-sqrt js/Math))
 
 (defn disc [r z]
    (let [g (js/THREE.Geometry.)
@@ -271,7 +297,8 @@
 
 (add-t! :vector g1)
 (add-t! :plane g1)
-(add-t! :vector g2)
+(add-t! :line g1)
+; (add-t! :vector g2)
 ;(add-t! :vector (def g2 (geom -1 2 -1)))
 ;(add-t! :vector (def g3 (geom 1 -2 1)))
 
