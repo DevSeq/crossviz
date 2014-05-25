@@ -326,13 +326,25 @@
 (reset! animating false)
 
 
-(let [line1 (geom 1 2 2)]
+(let [line1 (geom 1 2 2)
+      line2 (geom -1 2 1.5)
+      cp    (-> (js/THREE.Vector3.)
+                (.crossVectors
+                 (js/THREE.Vector3. (:x line1) (:y line1)  (:z line1))
+                 (js/THREE.Vector3. (:x line2) (:y line2)  (:z line2))))
+      pt1    (geom (.-x cp) (.-y cp) (.-z cp))
+      ]
+  (lh pt1)
   (add-t! :vector line1)
   (add-t! :plane  line1)
-  (add-t! :point  line1)
+  (add-t! :line   line1)
+ 
+  (add-t! :vector line2)
+  (add-t! :plane  line2)
+  (add-t! :line   line2)
+
+  (add-t! :point  pt1)
 )
-
-
 
 
 (defn add-light-ball [r]
