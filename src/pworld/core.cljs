@@ -1,3 +1,8 @@
+;;
+;; see https://github.com/magomimmo/modern-cljs/blob/master/doc/tutorial-02.md
+;; for an idea about how to create a browser-connected repl
+;;
+
 (ns pworld.core
   (:require
    [figwheel.client :as fw]))
@@ -9,6 +14,8 @@
 (def abs  (.-abs js/Math))
 
 (def univDiam 2)
+(def vectorColor 0x000000)
+(def lineColor   0x000000)
 
 (enable-console-print!)
 
@@ -20,6 +27,8 @@
       {:x x :y y :z z})
    ([x y]
       (geom x y 1)))
+
+(defn normalize-geom [{:keys [x y z]}] (geom (/ x z) (/ y z)))
 
 (defn add-t* [t state g]
   (update-in state [g] 
@@ -50,13 +59,17 @@
 
 (defmulti geom-to first)
 
+(defn geom-to-point [g]
+  (let [ng (normalize-geom g)]
+    (ball 0.05 (:x ng) (:y ng) (:z ng))))
+
 (defn geom-to-vector [{:keys [x y z]}]
     (let [g (js/THREE.Geometry.)]
       (.push (.-vertices g) (js/THREE.Vector3. x y z))
       (.push (.-vertices g) (js/THREE.Vector3. 0 0 0))
       (js/THREE.Line. g (js/THREE.LineBasicMaterial.
                          #js {
-                               :color      0x663399,
+                               :color      vectorColor,
                                :opacity    0,
                                :linewidth  2
                              }))))
@@ -93,7 +106,7 @@
     (-> g (.-vertices) (.push (vert (/ (+ (- B) D) (* 2.0 A)))))
     (-> g (.-vertices) (.push (vert (/ (- (- B) D) (* 2.0 A)))))
     (js/THREE.Line. g (js/THREE.LineBasicMaterial. #js{
-                                                      :color     0x663399,
+                                                      :color     lineColor,
                                                       :opacity   0,
                                                       :linewidth 5
                                    }))
@@ -107,7 +120,7 @@
    (geom-to-line g)
 )
 (defmethod geom-to :point [[_ g]]
-   (geom-to-vector g)
+   (geom-to-point g)
 )
 (defmethod geom-to :plane [[_ g]]
    (geom-to-plane g)
@@ -217,13 +230,26 @@
        (.computeBoundingSphere g)
        (.computeFaceNormals g)
        (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
-                                                          :color 0xffffff,
+                                                          ; :color 0xffffff,
+                                                          ; :specular 0xffffff,
+                                                          ; :shininess 30,
                                                           :transparent true,
                                                           :side (.-DoubleSide js/THREE),
-                                                          :opacity 0.5
+                                                          :opacity 0.7
                                                           }))))
 
-
+(defn ball [r x y z]
+  ;; creates a sphere of radius r centered at 0,0,0
+  (let [g (js/THREE.SphereGeometry. r 32 32)
+        s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
+                                                             :transparent false,
+                                                             :side THREE.DoubleSide,
+                                                             :color 0x000000,
+                                                             }))]
+    ; (.computeBoundingSphere g)
+    ; (.computeFaceNormals g)
+    (.set (.-position s) x y z)
+    s))
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
@@ -264,61 +290,64 @@
       width     (.-offsetWidth container)
       height    (.-offsetHeight container)
       camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 )
-      light     (js/THREE.DirectionalLight.  0xffffff  1.5)
-      light2    (js/THREE.DirectionalLight.  0xffffff  1.5)
+      light1    (js/THREE.DirectionalLight.  0xffffff  0.5)
+      light2    (js/THREE.DirectionalLight.  0xffffff  0.6)
+      light3    (js/THREE.DirectionalLight.  0xffffff  0.7)
+      ;ambient   (js/THREE.AmbientLight. 0x404040)
       controls  (createCameraControls camera (.-domElement renderer))
       run       (fn run []
                   (.update controls)
                   (.render renderer scene camera)
-                  ; if (animating) { world.rotation.y -= 0.01; }
                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
                   (js/requestAnimationFrame run))
      ]
-     (.setSize renderer width height)
-     (.set (.-position camera) 1  -5  3)
-     (.set (.-up camera) 0 0 1)
-     (.set (.-position light) 0 0 1)
-     (.set (.-position light2) 0 0 -1)
-     (.add scene light)
-     (.add scene light2)
-     (.add scene @world)
-     (run)
-;    (consolelog "hi there")
+  (.setSize renderer width height)
+  (.setClearColor renderer 0x444455 1)
+  (.set (.-position camera) 1  -5  3)
+  (.set (.-up camera) 0 0 1)
+  (.lookAt camera (js/THREE.Vector3. 0 0 0))
+  (.set (.-position light1) 100 0 0)
+  (.set (.-position light2) 0 -100 0)
+  (.set (.-position light3) 0  100 0)
+  ;(.add scene ambient)
+;  (.add scene light)
+;  (.add scene light2)
+  (.add camera light1)
+  (.add camera light2)
+  (.add camera light3)
+  (.add scene camera)
+  ;(.add scene light2)
+  (.add scene @world)
+  (run)
 )
 )
 
 ; (add (axes 2.0))
-; (reset! animating true)
+(reset! animating false)
 
-; (def g1 (geom 1 2 3))
 
-(def g1 (geom 1 2 1))
-(def g2 (geom 1 -2 1))
+(let [line1 (geom 1 2 2)]
+  (add-t! :vector line1)
+  (add-t! :plane  line1)
+  (add-t! :point  line1)
+)
 
-(add-t! :vector g1)
-(add-t! :plane g1)
-(add-t! :line g1)
-; (add-t! :vector g2)
-;(add-t! :vector (def g2 (geom -1 2 -1)))
-;(add-t! :vector (def g3 (geom 1 -2 1)))
 
-; (add (geom-to-vector g1))
 
-;      (.push
-;       (.vertices
-;        g)
-;       (js/THREE.Vector3. x y z)
-;       )
 
-; (println "discy wiscy")
-;(.log js/console (disc 2 1))
+(defn add-light-ball [r]
+  ;; adds a very shiny sphere of radius r, at the origin; its specular highlights show
+  ;; the location of the light sources
+  (let [g (js/THREE.SphereGeometry. r 32 32)
+        s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
+                                                             :transparent false,
+                                                             :side THREE.DoubleSide,
+                                                             :specular 0xffffff,
+                                                             :shininess 100
+                                                             }))]
+    (.add @world s)))
 
+;(add-light-ball 0.5)
+
+;;;;;;;;;;;;;;;;;;;;;
 (fw/watch-and-reload)
-
-; (fw/watch-and-reload  :jsload-callback (fn []
-;                                          ;; you would add this if you
-;                                          ;; have more than one file
-;                                          #_(reset! flap-state @flap-state)
-;                                          ))
-
-
