@@ -30,6 +30,11 @@
 
 (defn normalize-geom [{:keys [x y z]}] (geom (/ x z) (/ y z)))
 
+(defn cross [g0 g1]
+  (geom (- (* (:y g0) (:z g1)) (* (:y g1) (:z g0)))
+        (- (* (:x g1) (:z g0)) (* (:x g0) (:z g1)))
+        (- (* (:x g0) (:y g1)) (* (:x g1) (:y g0)))))
+
 (defn add-t* [t state g]
   (update-in state [g] 
     (fn [s] (conj (or s #{}) t))))
@@ -328,13 +333,8 @@
 
 (let [line1 (geom 1 2 2)
       line2 (geom -1 2 1.5)
-      cp    (-> (js/THREE.Vector3.)
-                (.crossVectors
-                 (js/THREE.Vector3. (:x line1) (:y line1)  (:z line1))
-                 (js/THREE.Vector3. (:x line2) (:y line2)  (:z line2))))
-      pt1    (geom (.-x cp) (.-y cp) (.-z cp))
+      pt1    (cross line1 line2)
       ]
-  (lh pt1)
   (add-t! :vector line1)
   (add-t! :plane  line1)
   (add-t! :line   line1)
