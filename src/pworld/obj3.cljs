@@ -1,6 +1,6 @@
 (ns pworld.obj3
   (:require [pworld.math :as math]
-            [pworld.geom :as geom]
+            [pworld.rp2 :as rp2]
             [pworld.constants :as constants])
 )
 
@@ -66,7 +66,7 @@
 ;;;
 
 (defn point-from-typed-geom [g]
-  (let [ng (geom/normalize g)]
+  (let [ng (rp2/normalize g)]
     (ball 0.05 (:x ng) (:y ng) (:z ng))))
 
 (defn vector-from-typed-geom [{:keys [x y z]}]
@@ -146,3 +146,24 @@
 ;;;                                                              }))]
 ;;;     (.add @world s)))
 
+(defn text [string [x y z] [nx ny nz]]
+  (let [g (js/THREE.TextGeometry. string
+                                  #js{ :size 1.0 ; — Float. Size of the text.
+                                       :height 0.01 ; — Float. Thickness to extrude text. Default is 50.
+                                        ; :curveSegments — Integer. Number of points on the curves.
+                                        ; :font — String. Font name.
+                                        ; :weight — String. Font weight (normal, bold).
+                                        ; :style — String. Font style (normal, italics).
+                                        ; :bevelEnabled — Boolean. Turn on bevel. Default is False.
+                                        ; :bevelThickness — Float. How deep into text bevel goes. Default is 10.
+                                        ; :bevelSize — Float. How far from text outline is bevel. Default is 8.
+                                      })
+        s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
+                                                             :transparent false,
+                                                             :side THREE.DoubleSide,
+                                                             :color 0xff0000,
+                                                             }))]
+    ; (.computeBoundingSphere g)
+    ; (.computeFaceNormals g)
+    (.set (.-position s) x y z)
+    s))

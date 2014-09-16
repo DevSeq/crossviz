@@ -1,5 +1,5 @@
 (ns pworld.core
-  (:require [pworld.geom :as geom]
+  (:require [pworld.rp2 :as rp2]
             [pworld.obj3 :as obj3]
             [pworld.math :as math]
             [pworld.constants :as constants])
@@ -85,6 +85,8 @@
     container)
 )
 
+(def textobj3 (obj3/text "Hello P World!" [0 0 1] [0 0 1]))
+
 (let [
       renderer  (js/THREE.WebGLRenderer. #js{:antialias true})
       container (prepareContainer (.getElementById js/document "container") renderer)
@@ -97,6 +99,12 @@
       controls  (createCameraControls camera (.-domElement renderer))
       run       (fn run []
                   (.update controls)
+
+;textobj3.rotation.setFromRotationMatrix( camera.matrix );
+(.setFromRotationMatrix
+  (.-rotation textobj3) (.-matrix camera)
+)
+
                   (.render renderer scene-root camera)
                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
                   (js/requestAnimationFrame run))
@@ -129,14 +137,15 @@
                   (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
                         1)
                   )
+    (.add @world textobj3)
     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
     (.add scene-root @world)
    ))
 
 
-(let [line1 (geom/geom 1 2 2)
-      line2 (geom/geom -1 2 1.5)
-      pt1    (geom/cross line1 line2)
+(let [line1 (rp2/rp2 1 2 2)
+      line2 (rp2/rp2 -1 2 1.5)
+      pt1    (rp2/cross line1 line2)
       ]
   (add-t! :vector line1)
   (add-t! :plane  line1)
@@ -147,4 +156,6 @@
   (add-t! :line   line2)
 
   (add-t! :point  pt1)
+  (add-t! :vector  pt1)
 )
+
