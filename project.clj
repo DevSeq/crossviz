@@ -7,7 +7,8 @@
                  [org.clojure/core.async "0.1.278.0-76b25b-alpha"]
                  [figwheel "0.1.2-SNAPSHOT"]]
 
-  :plugins [[lein-cljsbuild "1.0.3"]
+  :plugins [[cider/cider-nrepl "0.7.0-SNAPSHOT"]
+            [lein-cljsbuild "1.0.3"]
             [lein-figwheel "0.1.2-SNAPSHOT"]]
 
   :source-paths ["src"]
