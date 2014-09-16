@@ -1,63 +1,95 @@
 (ns pworld.core
   (:require [pworld.rp2 :as rp2]
             [pworld.obj3 :as obj3]
+            [pworld.geom :as geom]
             [pworld.math :as math]
             [pworld.constants :as constants])
 )
 
-(defn typed-geoms [state]
-  ; This function takes a state map and returns a list of all the objects that should
-  ; be displayed.  More specifically, it returns a list of vectors, where each vector
-  ; is of the form [type g], indicating that the geom `g` should be displyed as type
-  ; `type`.
-  ;
-  ; In general, we call a vector of the form [type g] a "typed geom".  So this function
-  ; takes a world state map and returns a list of typed geoms.
-  (mapcat 
-   (fn [[g types]] 
-       (map (fn [type] [type g]) types))
-   state))
+;;; (defn typed-goems [state]
+;;;   ; This function takes a state map and returns a list of all the objects that should
+;;;   ; be displayed.  More specifically, it returns a list of vectors, where each vector
+;;;   ; is of the form [type g], indicating that the goem `g` should be displyed as type
+;;;   ; `type`.
+;;;   ;
+;;;   ; In general, we call a vector of the form [type g] a "typed goem".  So this function
+;;;   ; takes a world state map and returns a list of typed goems.
+;;;   (mapcat 
+;;;    (fn [[g types]] 
+;;;        (map (fn [type] [type g]) types))
+;;;    state))
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
 (def scene-root (js/THREE.Scene.))
 
-; @world-state is a map whose keys are geoms; the value for each geom is a set of display
-; types for that geom, indicating one or more ways that the geom should be displayed.
-;
-; Note that this data model does not allow two geoms with the same coordinates to
-; be displayed as the same type, which is a limitation that we might want to remove
-; in the future.
-(def world-state (atom {}))
+;;; ; @world-state is a map whose keys are goems; the value for each goem is a set of display
+;;; ; types for that goem, indicating one or more ways that the goem should be displayed.
+;;; ;
+;;; ; Note that this data model does not allow two goems with the same coordinates to
+;;; ; be displayed as the same type, which is a limitation that we might want to remove
+;;; ; in the future.
+;;; (def world-state (atom {}))
+
+; @geoms is a list of all the geoms to be displayed in the world
+(def geoms (atom []))
+
+(defn insert-geom [g]
+  (swap! geoms (fn [gs] (conj gs g))))
+
+; @texts is a list of all the text objects in the world; this is a list of obj3
+; objects which need to be kept camera-facing
+(def texts (atom []))
 
 ; @world is an obj3 object that gets added to `scene-root`; it's updated with a new
-; value (and replaced in `scene-root`) whenever the value of @world-state changes.
-; @world-state is a map which stores geoms and their display-types
-; @world is an obj3 which serves as a container for all the obj3's corresponding
-; to these geoms; @world is added to scene-root below.
+; value (and replaced in `scene-root`) whenever the value of @geoms changes, i.e.
+; whenever anything is inserted into or removed from @geoms.
 (def world (atom (js.THREE.Object3D.)))
+
+; The following arranges for the enclosed function (fn ...) to be called whenever
+; the value of the world-state atom changes.  The function (fn ...) is called with
+; 4 args, the last of which is the new value of world-state.
+(add-watch geoms :geoms-watch
+  (fn [_ _ _ new-geoms]
+    (.remove scene-root @world)
+    (reset! world (js.THREE.Object3D.))
+;;;     (.add @world (obj3/axes 2.0))
+;;;     (.add @world (obj3/disc
+;;;                   (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
+;;;                         1)
+;;;                   )
+;;;     (.add @world textobj3)
+;;;     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
+    (reset! texts [])
+    (doseq [g new-geoms]
+      (let [obj (geom/to-obj3 g)]
+        (if (= (:type g) :text) (swap! texts (fn [ts] (conj ts obj))))
+        (.add @world obj)))
+
+    (.add scene-root @world)
+   ))
 
 ; if @animating is true, the world is always spinning
 (def animating (atom false))
 
-(defn add-t* [type state g]
-  ; Returns a new world-state map in which `type` has been added to the display-type set
-  ; for the geom `g`.  Note that this function does not modify anything --- it takes
-  ; a world-state map as an arg, and returns a new world-state map.
-  (update-in state [g] 
-    (fn [s] (conj (or s #{}) type))))
-
-(defn add-t! [type g]
-  ; This function modifies the world-state atom's value to add `type` to the display-type
-  ; set for the geom `g`.
-  (swap! world-state
-         (fn [state]
-           (add-t* type state g))))
-
-(defn to-obj3-list [state]
-  ; this function takes a world state map and returns a list of THREE.js objects
-  (map obj3/from-typed-geom (typed-geoms state))
-)
+;;; (defn add-t* [type state g]
+;;;   ; Returns a new world-state map in which `type` has been added to the display-type set
+;;;   ; for the goem `g`.  Note that this function does not modify anything --- it takes
+;;;   ; a world-state map as an arg, and returns a new world-state map.
+;;;   (update-in state [g] 
+;;;     (fn [s] (conj (or s #{}) type))))
+;;; 
+;;; (defn add-t! [type g]
+;;;   ; This function modifies the world-state atom's value to add `type` to the display-type
+;;;   ; set for the goem `g`.
+;;;   (swap! world-state
+;;;          (fn [state]
+;;;            (add-t* type state g))))
+;;; 
+;;; (defn to-obj3-list [state]
+;;;   ; this function takes a world state map and returns a list of THREE.js objects
+;;;   (map obj3/from-typed-goem (typed-goems state))
+;;; )
 
 (defn createCameraControls [camera domElement]
   ; takes a THREE.js camera, and a dom element, and returns
@@ -85,8 +117,6 @@
     container)
 )
 
-(def textobj3 (obj3/text "Hello P World!" [0 0 1] [0 0 1]))
-
 (let [
       renderer  (js/THREE.WebGLRenderer. #js{:antialias true})
       container (prepareContainer (.getElementById js/document "container") renderer)
@@ -100,10 +130,12 @@
       run       (fn run []
                   (.update controls)
 
-;textobj3.rotation.setFromRotationMatrix( camera.matrix );
-(.setFromRotationMatrix
-  (.-rotation textobj3) (.-matrix camera)
-)
+(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
+
+;;textobj3.rotation.setFromRotationMatrix( camera.matrix );
+;(.setFromRotationMatrix
+;  (.-rotation textobj3) (.-matrix camera)
+;)
 
                   (.render renderer scene-root camera)
                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
@@ -125,37 +157,53 @@
   (run)
 )
 
-; The following arranges for the enclosed function (fn ...) to be called whenever
-; the value of the world-state atom changes.  The function (fn ...) is called with
-; 4 args, the last of which is the new value of world-state.
-(add-watch world-state :world-watch 
-  (fn [_ _ _ new-world-state]
-    (.remove scene-root @world)
-    (reset! world (js.THREE.Object3D.))
-    (.add @world (obj3/axes 2.0))
-    (.add @world (obj3/disc
-                  (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
-                        1)
-                  )
-    (.add @world textobj3)
-    (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
-    (.add scene-root @world)
-   ))
+;;; ; The following arranges for the enclosed function (fn ...) to be called whenever
+;;; ; the value of the world-state atom changes.  The function (fn ...) is called with
+;;; ; 4 args, the last of which is the new value of world-state.
+;;; (add-watch world-state :world-watch 
+;;;   (fn [_ _ _ new-world-state]
+;;;     (.remove scene-root @world)
+;;;     (reset! world (js.THREE.Object3D.))
+;;;     (.add @world (obj3/axes 2.0))
+;;;     (.add @world (obj3/disc
+;;;                   (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
+;;;                         1)
+;;;                   )
+;;;     (.add @world textobj3)
+;;;     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
+;;;     (.add scene-root @world)
+;;;    ))
 
 
 (let [line1 (rp2/rp2 1 2 2)
       line2 (rp2/rp2 -1 2 1.5)
       pt1    (rp2/cross line1 line2)
       ]
-  (add-t! :vector line1)
-  (add-t! :plane  line1)
-  (add-t! :line   line1)
- 
-  (add-t! :vector line2)
-  (add-t! :plane  line2)
-  (add-t! :line   line2)
+  
+  (insert-geom (geom/segment3 [0 0 0] [1 0 0] { :color 0xFF0000 }))
+  (insert-geom (geom/segment3 [0 0 0] [0 1 0] { :color 0x00FF00 }))
+  (insert-geom (geom/segment3 [0 0 0] [0 0 1] { :color 0x0000FF }))
 
-  (add-t! :point  pt1)
-  (add-t! :vector  pt1)
+  (insert-geom (geom/text     [1 0 0] "x"))
+  (insert-geom (geom/text     [0 1 0] "y"))
+  (insert-geom (geom/text     [0 0 1] "z"))
+
+;;;   (add-t! :vector line1)
+;;;   (add-t! :plane  line1)
+;;;   (add-t! :line   line1)
+;;;  
+;;;   (add-t! :vector line2)
+;;;   (add-t! :plane  line2)
+;;;   (add-t! :line   line2)
+;;; 
+;;;   (add-t! :point  pt1)
+;;;   (add-t! :vector  pt1)
+)
+
+#_(let
+    [g (geom/segment3 [0 0 0] [0 0 1] { :color 0xFF0000 })]
+
+  (.log js/console 
+        (obj3/segment3 (:a g) (:b g) g))
 )
 

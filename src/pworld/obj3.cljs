@@ -39,12 +39,12 @@
 
 (defn axis [v color]
   ; takes THREE.js Vector3 `v`, and a color `color`, and returns a
-  ; THREE.js geometry object representing an axis in the direction of `v`
+  ; THREE.js obj3 representing an axis in the direction of `v`
   ; (the endpoints of the axis will be v and -v).
-  (let [geom (js/THREE.Geometry.)]
-    (.push (.-vertices geom) v)
-    (.push (.-vertices geom) (.negate (.clone v)))
-    (js/THREE.Line. geom (js/THREE.LineBasicMaterial. #js{
+  (let [obj (js/THREE.Geometry.)]
+    (.push (.-vertices obj) v)
+    (.push (.-vertices obj) (.negate (.clone v)))
+    (js/THREE.Line. obj (js/THREE.LineBasicMaterial. #js{
       :color     color
       :opacity   0.5
       :linewidth 2
@@ -62,14 +62,14 @@
 )
 
 ;;;
-;;; functions to convert typed geoms into THREE.js objects for display
+;;; functions to convert typed goems into THREE.js objects for display
 ;;;
 
-(defn point-from-typed-geom [g]
+(defn point-from-typed-goem [g]
   (let [ng (rp2/normalize g)]
     (ball 0.05 (:x ng) (:y ng) (:z ng))))
 
-(defn vector-from-typed-geom [{:keys [x y z]}]
+(defn vector-from-typed-goem [{:keys [x y z]}]
     (let [g (js/THREE.Geometry.)]
       (.push (.-vertices g) (js/THREE.Vector3. x y z))
       (.push (.-vertices g) (js/THREE.Vector3. 0 0 0))
@@ -80,7 +80,7 @@
                                :linewidth  2
                              }))))
 
-(defn plane-from-typed-geom [{:keys [x y z]}]
+(defn plane-from-typed-goem [{:keys [x y z]}]
   ; return a disc Object3D through 0,0,0
   (let [v     (js/THREE.Vector3. x y z)
         k     (js/THREE.Vector3. 0 0 1)
@@ -95,7 +95,7 @@
     obj
 ))
 
-(defn line-from-typed-geom [{:keys [x y z]}]
+(defn line-from-typed-goem [{:keys [x y z]}]
   (let [g          (js/THREE.Geometry.)
         A          (+ (* x x) (* y y))
         [B C vert] (if (> (math/abs x) (math/abs y))
@@ -120,18 +120,18 @@
   )
 
 
-; a convenient multi-method for converting typed geoms to THREE.js objects
+; a convenient multi-method for converting typed goems to THREE.js objects
 
-(defmulti from-typed-geom first)
+(defmulti from-typed-goem first)
 
-(defmethod from-typed-geom :vector [[_ g]]   (vector-from-typed-geom g))
-(defmethod from-typed-geom :line   [[_ g]]   (line-from-typed-geom   g))
-(defmethod from-typed-geom :point  [[_ g]]   (point-from-typed-geom  g))
-(defmethod from-typed-geom :plane  [[_ g]]   (plane-from-typed-geom  g))
+(defmethod from-typed-goem :vector [[_ g]]   (vector-from-typed-goem g))
+(defmethod from-typed-goem :line   [[_ g]]   (line-from-typed-goem   g))
+(defmethod from-typed-goem :point  [[_ g]]   (point-from-typed-goem  g))
+(defmethod from-typed-goem :plane  [[_ g]]   (plane-from-typed-goem  g))
 
 ; so now we can say
-;    (from-typed-geom TYPED-GEOM)
-; to convert any typed geom to an obj3!
+;    (from-typed-goem TYPED-GOEM)
+; to convert any typed goem to an obj3!
 
 
 ;;; (defn add-light-ball [r]
@@ -146,10 +146,21 @@
 ;;;                                                              }))]
 ;;;     (.add @world s)))
 
-(defn text [string [x y z] [nx ny nz]]
-  (let [g (js/THREE.TextGeometry. string
-                                  #js{ :size 1.0 ; — Float. Size of the text.
-                                       :height 0.01 ; — Float. Thickness to extrude text. Default is 50.
+(defn text
+  ([string a] (string a nil))
+  ([string [x y z] props]
+     (let [mprops (merge default-props props)
+           g (js/THREE.TextGeometry. string (clj->js mprops))
+           s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. 
+                                (clj->js (merge {:transparent false, :side THREE.DoubleSide } mprops))))]
+       (.set (.-position s) x y z)
+       s)))
+
+(def default-props {:color     0x000000
+                    :opacity   0.0
+                    :linewidth 4
+                    :size      0.2  ; for text, size of the text
+                    :height    0.01 ; for text, height of the text
                                         ; :curveSegments — Integer. Number of points on the curves.
                                         ; :font — String. Font name.
                                         ; :weight — String. Font weight (normal, bold).
@@ -157,13 +168,16 @@
                                         ; :bevelEnabled — Boolean. Turn on bevel. Default is False.
                                         ; :bevelThickness — Float. How deep into text bevel goes. Default is 10.
                                         ; :bevelSize — Float. How far from text outline is bevel. Default is 8.
-                                      })
-        s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. #js{
-                                                             :transparent false,
-                                                             :side THREE.DoubleSide,
-                                                             :color 0xff0000,
-                                                             }))]
-    ; (.computeBoundingSphere g)
-    ; (.computeFaceNormals g)
-    (.set (.-position s) x y z)
-    s))
+                    })
+
+
+(defn segment3
+  ([a b]
+     (segment3 a b nil))
+  ([[ax ay az] [bx by bz] props]
+  ; takes 2 points in R3 (vectors), and a color, and returns a THREE.js obj3
+  ; representing a 3 dimensional line segment from a to b.
+     (let [obj (js/THREE.Geometry.)]
+       (.push (.-vertices obj) (js/THREE.Vector3. ax ay az))
+       (.push (.-vertices obj) (js/THREE.Vector3. bx by bz))
+       (js/THREE.Line. obj (js/THREE.LineBasicMaterial. (clj->js (merge default-props props)))))))
