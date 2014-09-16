@@ -146,16 +146,6 @@
 ;;;                                                              }))]
 ;;;     (.add @world s)))
 
-(defn text
-  ([string a] (string a nil))
-  ([string [x y z] props]
-     (let [mprops (merge default-props props)
-           g (js/THREE.TextGeometry. string (clj->js mprops))
-           s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. 
-                                (clj->js (merge {:transparent false, :side THREE.DoubleSide } mprops))))]
-       (.set (.-position s) x y z)
-       s)))
-
 (def default-props {:color     0x000000
                     :opacity   0.0
                     :linewidth 4
@@ -170,6 +160,16 @@
                                         ; :bevelSize — Float. How far from text outline is bevel. Default is 8.
                     })
 
+
+(defn text
+  ([string a] (string a nil))
+  ([string [x y z] props]
+     (let [mprops (merge default-props props)
+           g (js/THREE.TextGeometry. string (clj->js mprops))
+           s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. 
+                                (clj->js (merge {:transparent false, :side THREE.DoubleSide } mprops))))]
+       (.set (.-position s) x y z)
+       s)))
 
 (defn segment3
   ([a b]

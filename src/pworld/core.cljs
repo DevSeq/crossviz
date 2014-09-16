@@ -128,17 +128,16 @@
       light3    (js/THREE.DirectionalLight.  0xffffff  0.7)
       controls  (createCameraControls camera (.-domElement renderer))
       run       (fn run []
+                  ; update the controls:
                   (.update controls)
-
-(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
-
-;;textobj3.rotation.setFromRotationMatrix( camera.matrix );
-;(.setFromRotationMatrix
-;  (.-rotation textobj3) (.-matrix camera)
-;)
-
+                  ; re-orient any text objects to be camera-facing:
+                  ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
+                  (dorun (map #(.setFromRotationMatrix  (.-rotation %) (.-matrix camera)) @texts))
+                  ; render the scene
                   (.render renderer scene-root camera)
+                  ; if animating, move time forward for next frame
                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
+                  ; request next frame:
                   (js/requestAnimationFrame run))
       ]
   (.setSize renderer width height)
