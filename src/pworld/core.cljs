@@ -19,6 +19,12 @@
 ;;;        (map (fn [type] [type g]) types))
 ;;;    state))
 
+(def current-id (atom 1000))
+
+(defn next-id []
+  (swap! current-id (fn [id] (inc id)))
+  @current-id)
+
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
 (def scene-root (js/THREE.Scene.))
@@ -35,7 +41,14 @@
 (def geoms (atom []))
 
 (defn insert-geom [g]
-  (swap! geoms (fn [gs] (conj gs g))))
+  (let [id (or (:id g) (next-id))
+        ng (merge g {:id id})]
+    (swap! geoms (fn [gs] (conj gs ng)))
+    ng))
+
+(defn remove-geom [g]
+  (swap! geoms
+         (fn [gs] (filter #(not= (:id %) (:id g)) gs))))
 
 ; @texts is a list of all the text objects in the world; this is a list of obj3
 ; objects which need to be kept camera-facing
@@ -173,19 +186,76 @@
 ;;;     (.add scene-root @world)
 ;;;    ))
 
+;(defn step [n]
+;  (.log js/console (str "cljs step "  n))
+;)
 
-(let [line1 (rp2/rp2 1 2 2)
+(defmulti step identity)
+
+(def rp2-a (rp2/rp2 1 2 2))
+(def rp2-b (rp2/rp2 -1 2 1.5))
+(def rp2-ab (rp2/cross rp2-a rp2-b))
+
+(defmethod step 1 []
+  )
+
+(defmethod step 2 []
+  )
+
+(defmethod step 3 []
+  )
+
+(defmethod step 4 []
+  (remove-geom { :id :x-axis})
+  (remove-geom { :id :x-axis-label })
+  )
+
+(defmethod step :default [])
+
+(defn stepforward [n]
+  (step n)
+)
+
+(def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
+
+(insert-geom (geom/zdisc
+              disc-radius 1
+              { :color 0xFFFFFF, :transparent true }))
+
+(insert-geom (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
+(insert-geom (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
+
+
+(insert-geom (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2 }))
+;(insert-geom (geom/text     [1 0 0] "x"))
+(insert-geom (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
+;(insert-geom (geom/text     [0 1 0] "y"))
+(insert-geom (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
+;(insert-geom (geom/text     [0 0 1] "z"))
+
+
+(insert-geom (geom/line rp2-a))
+(insert-geom (geom/line rp2-b))
+
+(insert-geom (geom/point rp2-ab))
+
+(insert-geom (geom/plane rp2-a { :color 0xFFFFFF, :transparent true }))
+(insert-geom (geom/vector rp2-a))
+(insert-geom (geom/plane rp2-b { :color 0xFFFFFF, :transparent true }))
+(insert-geom (geom/vector rp2-b))
+
+(insert-geom (geom/vector rp2-ab))
+
+
+#_(let [line1 (rp2/rp2 1 2 2)
       line2 (rp2/rp2 -1 2 1.5)
       pt1    (rp2/cross line1 line2)
       ]
   
-  (insert-geom (geom/segment3 [0 0 0] [1 0 0] { :color 0xFF0000 }))
-  (insert-geom (geom/segment3 [0 0 0] [0 1 0] { :color 0x00FF00 }))
-  (insert-geom (geom/segment3 [0 0 0] [0 0 1] { :color 0x0000FF }))
+;  (insert-geom (geom/segment3 [0 0 0] [1 0 0] { :color 0xFF0000 }))
+;  (insert-geom (geom/segment3 [0 0 0] [0 1 0] { :color 0x00FF00 }))
+;  (insert-geom (geom/segment3 [0 0 0] [0 0 1] { :color 0x0000FF }))
 
-  (insert-geom (geom/text     [1 0 0] "x"))
-  (insert-geom (geom/text     [0 1 0] "y"))
-  (insert-geom (geom/text     [0 0 1] "z"))
 
 ;;;   (add-t! :vector line1)
 ;;;   (add-t! :plane  line1)
@@ -205,4 +275,3 @@
   (.log js/console 
         (obj3/segment3 (:a g) (:b g) g))
 )
-
