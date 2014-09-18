@@ -1,0 +1,10 @@
+{"version":3,
+ "file":
+ "/Users/mbp/Sites/pworld/resources/public/js/out/pworld/math.js",
+ "sources":["math.cljs"],
+ "lineCount":10,
+ "mappings":
+ ";AAAA;;AAEA,AAAKA,iBAAK,AAAMC;AAChB,AAAKC,kBAAK,AAAOD;AACjB,AAAKE,kBAAK,AAAOF;AACjB,AAAKG,mBAAK,AAAQH;AAClB,AAAKI,kBAAK,AAAOJ",
+ "names":
+ ["pworld.math/PI", "js/Math", "pworld.math/cos", "pworld.math/sin",
+  "pworld.math/sqrt", "pworld.math/abs"]}
