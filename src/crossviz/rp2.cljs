@@ -1,4 +1,4 @@
-(ns pworld.rp2)
+(ns crossviz.rp2)
 
 (defn rp2
   "with 3 args, create an rp2 element with coords x z y; with 2 args, create an element with coords x y 1"

@@ -4,7 +4,7 @@ $(document).ready(function() {
 
   $('#step-forward').click(function() {
       ++n;
-      pworld.core.stepforward(n);
+      crossviz.core.stepforward(n);
   });
 
 });

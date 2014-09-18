@@ -1,0 +1,10 @@
+{"version":3,
+ "file":
+ "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/constants.js",
+ "sources":["constants.cljs"],
+ "lineCount":8,
+ "mappings":
+ ";AAAA;;AAEA,4BAAA,5BAAKA;AACL,+BAAA,/BAAKC;AACL,6BAAA,7BAAKC",
+ "names":
+ ["crossviz.constants/univDiam", "crossviz.constants/vectorColor",
+  "crossviz.constants/lineColor"]}

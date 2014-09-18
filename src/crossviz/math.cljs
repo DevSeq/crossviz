@@ -1,4 +1,4 @@
-(ns pworld.math)
+(ns crossviz.math)
 
 (def PI   (.-PI js/Math))
 (def cos  (.-cos js/Math))

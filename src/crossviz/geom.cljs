@@ -7,9 +7,9 @@
 ;;;     { :type :segment  :color ..., :a ..., :b ... }
 ;;;     { :type :text     :color ..., :a ..., ... }
 
-(ns pworld.geom
-  (:require [pworld.obj3 :as obj3]
-            [pworld.rp2 :as rp2]))
+(ns crossviz.geom
+  (:require [crossviz.obj3 :as obj3]
+            [crossviz.rp2 :as rp2]))
 
 (defn segment3
   ([a b]

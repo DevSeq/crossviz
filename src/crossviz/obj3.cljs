@@ -1,7 +1,7 @@
-(ns pworld.obj3
-  (:require [pworld.math :as math]
-            [pworld.rp2 :as rp2]
-            [pworld.constants :as constants])
+(ns crossviz.obj3
+  (:require [crossviz.math :as math]
+            [crossviz.rp2 :as rp2]
+            [crossviz.constants :as constants])
 )
 
 (def default-props {:color       0x000000

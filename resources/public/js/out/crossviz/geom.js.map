@@ -1,21 +1,21 @@
 {"version":3,
  "file":
- "/Users/mbp/Sites/pworld/resources/public/js/out/pworld/geom.js",
+ "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/geom.js",
  "sources":["geom.cljs"],
  "lineCount":165,
  "mappings":
  "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",
  "names":
- ["pworld.geom/segment3", "a", "b", "segment3", "props",
-  "cljs.core/assoc", "pworld.geom/text", "string", "text",
-  "pworld.geom/zdisc", "r", "z", "zdisc", "pworld.geom/line", "p",
-  "line", "pworld.geom/point", "point", "pworld.geom/plane", "plane",
-  "pworld.geom/vector", "vector", "method-table__4339__auto__",
+ ["crossviz.geom/segment3", "a", "b", "segment3", "props",
+  "cljs.core/assoc", "crossviz.geom/text", "string", "text",
+  "crossviz.geom/zdisc", "r", "z", "zdisc", "crossviz.geom/line", "p",
+  "line", "crossviz.geom/point", "point", "crossviz.geom/plane", "plane",
+  "crossviz.geom/vector", "vector", "method-table__4339__auto__",
   "cljs.core/atom", "prefer-table__4340__auto__",
   "method-cache__4341__auto__", "cached-hierarchy__4342__auto__",
   "hierarchy__4343__auto__", "cljs.core/get",
   "cljs.core/get-global-hierarchy", "cljs.core/MultiFn",
-  "pworld.geom/to-obj3", "cljs.core/-add-method", "g",
-  "pworld.obj3/segment3", "pworld.obj3/text", "pworld.obj3/zdisc",
-  "pworld.obj3/segment", "ng", "pworld.rp2/normalize",
-  "pworld.obj3/ball", "pworld.obj3/plane", "pworld.obj3/vector"]}
+  "crossviz.geom/to-obj3", "cljs.core/-add-method", "g",
+  "crossviz.obj3/segment3", "crossviz.obj3/text", "crossviz.obj3/zdisc",
+  "crossviz.obj3/segment", "ng", "crossviz.rp2/normalize",
+  "crossviz.obj3/ball", "crossviz.obj3/plane", "crossviz.obj3/vector"]}

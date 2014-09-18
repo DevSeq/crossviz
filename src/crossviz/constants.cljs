@@ -1,4 +1,4 @@
-(ns pworld.constants)
+(ns crossviz.constants)
 
 (def univDiam 2)
 (def vectorColor 0x000000)

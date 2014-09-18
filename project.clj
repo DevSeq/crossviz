@@ -1,4 +1,4 @@
-(defproject pworld "0.1.0-SNAPSHOT"
+(defproject crossviz "0.1.0-SNAPSHOT"
   :description "FIXME: write this!"
   :url "http://example.com/FIXME"
 
@@ -14,10 +14,10 @@
   :source-paths ["src"]
 
   :cljsbuild { 
-    :builds [{:id "pworld"
+    :builds [{:id "crossviz"
               :source-paths ["src"]
               :compiler {
-                         :output-to "resources/public/js/pworld.js"
+                         :output-to "resources/public/js/crossviz.js"
                          :output-dir "resources/public/js/out"
                          :optimizations :none
                          :source-map true}}]}

@@ -1,9 +1,9 @@
-(ns pworld.core
-  (:require [pworld.rp2 :as rp2]
-            [pworld.obj3 :as obj3]
-            [pworld.geom :as geom]
-            [pworld.math :as math]
-            [pworld.constants :as constants])
+(ns crossviz.core
+  (:require [crossviz.rp2 :as rp2]
+            [crossviz.obj3 :as obj3]
+            [crossviz.geom :as geom]
+            [crossviz.math :as math]
+            [crossviz.constants :as constants])
 )
 
 ;;; (defn typed-goems [state]
