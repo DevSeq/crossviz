@@ -161,25 +161,51 @@
        (.set (.-position s) x y z)
        s)))
 
+(defn segment-endpoints [{:keys [x y z]}]
+  (let [A          (+ (* x x) (* y y))
+        [B C vert] (if (> (math/abs x) (math/abs y))
+                     [ (* 2 y z)                                                             ; B
+                       (+ (* z z) (* x x (- 1 (* constants/univDiam constants/univDiam))))   ; C
+                       (fn [t] [(/ (- (+ z (* y t))) x) t 1])              ; vert
+                       ]
+                     [ (* 2 x z)                                                             ; B
+                       (+ (* z z) (* y y (- 1 (* constants/univDiam constants/univDiam))))   ; C
+                       (fn [t] [t  (/ (- (+ z (* x t))) y)  1])            ; vert
+                       ])
+        D          (math/sqrt (- (* B B) (* 4 A C)))
+        ]
+    [(vert (/ (+ (- B) D) (* 2.0 A)))
+     (vert (/ (- (- B) D) (* 2.0 A)))]))
+
+
 (defn segment 
   ([p] (segment p nil))
-  ([{:keys [x y z]} props]
-     (let [g          (js/THREE.Geometry.)
-           A          (+ (* x x) (* y y))
-           [B C vert] (if (> (math/abs x) (math/abs y))
-                        [ (* 2 y z)                                                             ; B
-                          (+ (* z z) (* x x (- 1 (* constants/univDiam constants/univDiam))))   ; C
-                          (fn [t] (js/THREE.Vector3. (/ (- (+ z (* y t))) x) t 1))              ; vert
-                          ]
-                        [ (* 2 x z)                                                             ; B
-                          (+ (* z z) (* y y (- 1 (* constants/univDiam constants/univDiam))))   ; C
-                          (fn [t] (js/THREE.Vector3. t  (/ (- (+ z (* x t))) y)  1))            ; vert
-                          ])
-           D          (math/sqrt (- (* B B) (* 4 A C)))
-           ]
-       (-> g (.-vertices) (.push (vert (/ (+ (- B) D) (* 2.0 A)))))
-       (-> g (.-vertices) (.push (vert (/ (- (- B) D) (* 2.0 A)))))
+  ([p props]
+     (let [[a b] (segment-endpoints p)
+           g     (js/THREE.Geometry.)]
+       (-> g (.-vertices) (.push (js/THREE.Vector3. (a 0) (a 1) (a 2))))
+       (-> g (.-vertices) (.push (js/THREE.Vector3. (b 0) (b 1) (b 2))))
        (js/THREE.Line. g (js/THREE.LineBasicMaterial. (clj->js (merge default-props props)))))))
+
+;(defn segment 
+;  ([p] (segment p nil))
+;  ([{:keys [x y z]} props]
+;     (let [g          (js/THREE.Geometry.)
+;           A          (+ (* x x) (* y y))
+;           [B C vert] (if (> (math/abs x) (math/abs y))
+;                        [ (* 2 y z)                                                             ; B
+;                          (+ (* z z) (* x x (- 1 (* constants/univDiam constants/univDiam))))   ; C
+;                          (fn [t] (js/THREE.Vector3. (/ (- (+ z (* y t))) x) t 1))              ; vert
+;                          ]
+;                        [ (* 2 x z)                                                             ; B
+;                          (+ (* z z) (* y y (- 1 (* constants/univDiam constants/univDiam))))   ; C
+;                          (fn [t] (js/THREE.Vector3. t  (/ (- (+ z (* x t))) y)  1))            ; vert
+;                          ])
+;           D          (math/sqrt (- (* B B) (* 4 A C)))
+;           ]
+;       (-> g (.-vertices) (.push (vert (/ (+ (- B) D) (* 2.0 A)))))
+;       (-> g (.-vertices) (.push (vert (/ (- (- B) D) (* 2.0 A)))))
+;       (js/THREE.Line. g (js/THREE.LineBasicMaterial. (clj->js (merge default-props props)))))))
   
 (defn plane
   ([p] (plane p nil))

@@ -190,25 +190,116 @@
 ;  (.log js/console (str "cljs step "  n))
 ;)
 
+(def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
+
 (defmulti step identity)
 
-(def rp2-a (rp2/rp2 1 2 2))
-(def rp2-b (rp2/rp2 -1 2 1.5))
+(def rp2-a (rp2/rp2 2  4 2))
+(def rp2-b (rp2/rp2 3 -6 2))
 (def rp2-ab (rp2/cross rp2-a rp2-b))
 
+; 2D xy axes:
+(insert-geom (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
+(insert-geom (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
+(insert-geom (geom/text [disc-radius 0 1] "x"))
+(insert-geom (geom/text [0 disc-radius 1] "y"))
+
+;(insert-geom (geom/line rp2-a))
+;(insert-geom (geom/line rp2-b))
+;(insert-geom (geom/vector rp2-a))
+;(insert-geom (geom/vector rp2-b))
+;(insert-geom (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2 }))
+;(insert-geom (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
+;(insert-geom (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
+
+(def geom-line-a (geom/line rp2-a { :id :line-a }))
+(def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
+                                  (str (:x rp2-a) "x + " (:y rp2-a) "y + " (:z rp2-a) " = 0")
+                                  { :id :line-a-label }))
+(def geom-plane-a (geom/plane rp2-a { :id :plane-a, :transparent true, :color 0xFFFFFF }))
+(def geom-vector-a (geom/vector rp2-a { :id :vector-a }))
+(def geom-vector-a-label (geom/text [(:x rp2-a) (:y rp2-a) (:z rp2-a)]
+                                  (str "(" (:x rp2-a) "," (:y rp2-a) "," (:z rp2-a) ")")
+                                  { :id :vector-a-label }))
+
+(def geom-line-b (geom/line rp2-b { :id :line-b }))
+(def geom-line-b-label (geom/text (first (obj3/segment-endpoints rp2-b))
+                                  (str (:x rp2-b) "x + " (:y rp2-b) "y + " (:z rp2-b) " = 0")
+                                  { :id :line-b-label }))
+(def geom-plane-b (geom/plane rp2-b { :id :plane-b, :transparent true, :color 0xFFFFFF }))
+(def geom-vector-b (geom/vector rp2-b { :id :vector-b }))
+(def geom-vector-b-label (geom/text [(:x rp2-b) (:y rp2-b) (:z rp2-b)]
+                                  (str "(" (:x rp2-b) "," (:y rp2-b) "," (:z rp2-b) ")")
+                                  { :id :vector-b-label }))
+
+(def geom-point-ab (geom/point rp2-ab { :id :point-ab }))
+(def geom-point-ab-label
+  (let [p (rp2/normalize rp2-ab)]
+    (geom/text [(:x p) (+ (:y p) 0.2) (:z p)] "?" { :id :point-ab-label })))
+
+
+(def geom-3d-x-axis (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2, :id :3d-x-axis }))
+(def geom-3d-y-axis (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2, :id :3d-y-axis }))
+(def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2, :id :3d-z-axis }))
+
+(def geom-z1-disc (geom/zdisc disc-radius 1 { :color 0xFFFFFF, :transparent true, :id :z1-disc }))
+
 (defmethod step 1 []
-  )
+ (insert-geom geom-line-a)
+ (insert-geom geom-line-a-label)
+)
 
 (defmethod step 2 []
-  )
+ (insert-geom geom-line-b)
+ (insert-geom geom-line-b-label)
+)
 
 (defmethod step 3 []
-  )
+  (insert-geom geom-point-ab)
+  (insert-geom geom-point-ab-label)
+)
 
 (defmethod step 4 []
-  (remove-geom { :id :x-axis})
-  (remove-geom { :id :x-axis-label })
-  )
+  (insert-geom geom-3d-x-axis)
+  (insert-geom geom-3d-y-axis)
+  (insert-geom geom-3d-z-axis)
+)
+
+(defmethod step 5 []
+  ; plane (disc) at height z=1:
+  (insert-geom geom-z1-disc)
+)
+
+(defmethod step 6 []
+  (remove-geom geom-point-ab)
+  (remove-geom geom-point-ab-label)
+  (remove-geom geom-line-b)
+  (remove-geom geom-line-b-label)
+)
+
+(defmethod step 7 []
+  (insert-geom geom-plane-a)
+)
+
+(defmethod step 8 []
+  (insert-geom geom-vector-a)
+  (insert-geom geom-vector-a-label)
+)
+
+(defmethod step 9 []
+  (remove-geom geom-line-a-label)
+  (insert-geom geom-line-b)
+  (insert-geom geom-line-b-label)
+)
+
+(defmethod step 10 []
+  (insert-geom geom-plane-b)
+)
+
+(defmethod step 11 []
+  (insert-geom geom-vector-b)
+  (insert-geom geom-vector-b-label)
+)
 
 (defmethod step :default [])
 
@@ -216,35 +307,16 @@
   (step n)
 )
 
-(def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
-(insert-geom (geom/zdisc
-              disc-radius 1
-              { :color 0xFFFFFF, :transparent true }))
-
-(insert-geom (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
-(insert-geom (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
-
-
-(insert-geom (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2 }))
-;(insert-geom (geom/text     [1 0 0] "x"))
-(insert-geom (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
-;(insert-geom (geom/text     [0 1 0] "y"))
-(insert-geom (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
-;(insert-geom (geom/text     [0 0 1] "z"))
-
-
-(insert-geom (geom/line rp2-a))
-(insert-geom (geom/line rp2-b))
-
-(insert-geom (geom/point rp2-ab))
-
-(insert-geom (geom/plane rp2-a { :color 0xFFFFFF, :transparent true }))
-(insert-geom (geom/vector rp2-a))
-(insert-geom (geom/plane rp2-b { :color 0xFFFFFF, :transparent true }))
-(insert-geom (geom/vector rp2-b))
-
-(insert-geom (geom/vector rp2-ab))
+; 
+; 
+; 
+; (insert-geom (geom/plane rp2-a { :color 0xFFFFFF, :transparent true }))
+; (insert-geom (geom/vector rp2-a))
+; (insert-geom (geom/plane rp2-b { :color 0xFFFFFF, :transparent true }))
+; (insert-geom (geom/vector rp2-b))
+; 
+; (insert-geom (geom/vector rp2-ab))
 
 
 #_(let [line1 (rp2/rp2 1 2 2)
