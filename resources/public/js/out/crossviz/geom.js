@@ -5,11 +5,16 @@ goog.require('crossviz.rp2');
 goog.require('crossviz.rp2');
 goog.require('crossviz.obj3');
 goog.require('crossviz.obj3');
+crossviz.geom.current_id = cljs.core.atom.call(null,1000);
+crossviz.geom.next_id = (function next_id(){cljs.core.swap_BANG_.call(null,crossviz.geom.current_id,(function (id){return (id + 1);
+}));
+return cljs.core.deref.call(null,crossviz.geom.current_id);
+});
 crossviz.geom.segment3 = (function() {
 var segment3 = null;
 var segment3__2 = (function (a,b){return segment3.call(null,a,b,null);
 });
-var segment3__3 = (function (a,b,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"segment3","segment3",2069773010),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"b","b",1013904340),b);
+var segment3__3 = (function (a,b,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"segment3","segment3",2069773010),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"b","b",1013904340),b,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 segment3 = function(a,b,props){
 switch(arguments.length){
@@ -29,7 +34,7 @@ crossviz.geom.text = (function() {
 var text = null;
 var text__2 = (function (a,string){return text.call(null,a,string,null);
 });
-var text__3 = (function (a,string,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"text","text",1017460895),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"string","string",4416885635),string);
+var text__3 = (function (a,string,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"text","text",1017460895),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"string","string",4416885635),string,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 text = function(a,string,props){
 switch(arguments.length){
@@ -49,7 +54,7 @@ crossviz.geom.zdisc = (function() {
 var zdisc = null;
 var zdisc__2 = (function (r,z){return zdisc.call(null,r,z,null);
 });
-var zdisc__3 = (function (r,z,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"zdisc","zdisc",1129657473),new cljs.core.Keyword(null,"r","r",1013904356),r,new cljs.core.Keyword(null,"z","z",1013904364),z);
+var zdisc__3 = (function (r,z,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"zdisc","zdisc",1129657473),new cljs.core.Keyword(null,"r","r",1013904356),r,new cljs.core.Keyword(null,"z","z",1013904364),z,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 zdisc = function(r,z,props){
 switch(arguments.length){
@@ -69,7 +74,7 @@ crossviz.geom.line = (function() {
 var line = null;
 var line__1 = (function (p){return line.call(null,p,null);
 });
-var line__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"line","line",1017226086),new cljs.core.Keyword(null,"p","p",1013904354),p);
+var line__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"line","line",1017226086),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 line = function(p,props){
 switch(arguments.length){
@@ -89,7 +94,7 @@ crossviz.geom.point = (function() {
 var point = null;
 var point__1 = (function (p){return point.call(null,p,null);
 });
-var point__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"point","point",1120749826),new cljs.core.Keyword(null,"p","p",1013904354),p);
+var point__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"point","point",1120749826),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 point = function(p,props){
 switch(arguments.length){
@@ -109,7 +114,7 @@ crossviz.geom.plane = (function() {
 var plane = null;
 var plane__1 = (function (p){return plane.call(null,p,null);
 });
-var plane__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"plane","plane",1120652750),new cljs.core.Keyword(null,"p","p",1013904354),p);
+var plane__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"plane","plane",1120652750),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 plane = function(p,props){
 switch(arguments.length){
@@ -129,7 +134,7 @@ crossviz.geom.vector = (function() {
 var vector = null;
 var vector__1 = (function (p){return vector.call(null,p,null);
 });
-var vector__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"vector","vector",4488484021),new cljs.core.Keyword(null,"p","p",1013904354),p);
+var vector__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"vector","vector",4488484021),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
 });
 vector = function(p,props){
 switch(arguments.length){
@@ -145,7 +150,7 @@ vector.cljs$core$IFn$_invoke$arity$2 = vector__2;
 return vector;
 })()
 ;
-crossviz.geom.to_obj3 = (function (){var method_table__4339__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var prefer_table__4340__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var method_cache__4341__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var cached_hierarchy__4342__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var hierarchy__4343__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",3129050535),cljs.core.get_global_hierarchy.call(null));return (new cljs.core.MultiFn("to-obj3",new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"default","default",2558708147),hierarchy__4343__auto__,method_table__4339__auto__,prefer_table__4340__auto__,method_cache__4341__auto__,cached_hierarchy__4342__auto__));
+crossviz.geom.to_obj3 = (function (){var method_table__4349__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var prefer_table__4350__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var method_cache__4351__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var cached_hierarchy__4352__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var hierarchy__4353__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",3129050535),cljs.core.get_global_hierarchy.call(null));return (new cljs.core.MultiFn("to-obj3",new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"default","default",2558708147),hierarchy__4353__auto__,method_table__4349__auto__,prefer_table__4350__auto__,method_cache__4351__auto__,cached_hierarchy__4352__auto__));
 })();
 cljs.core._add_method.call(null,crossviz.geom.to_obj3,new cljs.core.Keyword(null,"segment3","segment3",2069773010),(function (g){return crossviz.obj3.segment3.call(null,new cljs.core.Keyword(null,"a","a",1013904339).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"b","b",1013904340).cljs$core$IFn$_invoke$arity$1(g),g);
 }));

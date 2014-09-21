@@ -11,47 +11,53 @@
   (:require [crossviz.obj3 :as obj3]
             [crossviz.rp2 :as rp2]))
 
+(def current-id (atom 1000))
+
+(defn next-id []
+  (swap! current-id (fn [id] (inc id)))
+  @current-id)
+
 (defn segment3
   ([a b]
      (segment3 a b nil))
   ([a b props]
-     (assoc props :type :segment3 :a a :b b)))
+     (assoc props :type :segment3 :a a :b b :id (next-id))))
 
 (defn text
   ([a string]
      (text a string nil))
   ([a string props]
-     (assoc props :type :text :a a :string string)))
+     (assoc props :type :text :a a :string string :id (next-id))))
 
 (defn zdisc
   ([r z]
      (zdisc r z nil))
   ([r z props]
-     (assoc props :type :zdisc :r r :z z)))
+     (assoc props :type :zdisc :r r :z z :id (next-id))))
 
 (defn line
   ([p]
      (line p nil))
   ([p props]
-     (assoc props :type :line :p p)))
+     (assoc props :type :line :p p :id (next-id))))
 
 (defn point
   ([p]
      (point p nil))
   ([p props]
-     (assoc props :type :point :p p)))
+     (assoc props :type :point :p p :id (next-id))))
 
 (defn plane
   ([p]
      (plane p nil))
   ([p props]
-     (assoc props :type :plane :p p)))
+     (assoc props :type :plane :p p :id (next-id))))
 
 (defn vector
   ([p]
      (vector p nil))
   ([p props]
-     (assoc props :type :vector :p p)))
+     (assoc props :type :vector :p p :id (next-id))))
 
 (defmulti to-obj3 :type)
 

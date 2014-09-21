@@ -4,6 +4,7 @@
             [crossviz.geom :as geom]
             [crossviz.math :as math]
             [crossviz.constants :as constants])
+  (:require-macros [crossviz.macros :as mymacros])
 )
 
 ;;; (defn typed-goems [state]
@@ -18,12 +19,6 @@
 ;;;    (fn [[g types]] 
 ;;;        (map (fn [type] [type g]) types))
 ;;;    state))
-
-(def current-id (atom 1000))
-
-(defn next-id []
-  (swap! current-id (fn [id] (inc id)))
-  @current-id)
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
@@ -40,11 +35,14 @@
 ; @geoms is a list of all the geoms to be displayed in the world
 (def geoms (atom []))
 
+;(defn insert-geom [g]
+;  (let [id (or (:id g) (next-id))
+;        ng (merge g {:id id})]
+;    (swap! geoms (fn [gs] (conj gs ng)))
+;    ng))
+
 (defn insert-geom [g]
-  (let [id (or (:id g) (next-id))
-        ng (merge g {:id id})]
-    (swap! geoms (fn [gs] (conj gs ng)))
-    ng))
+  (swap! geoms (fn [gs] (conj gs g))))
 
 (defn remove-geom [g]
   (swap! geoms
@@ -192,11 +190,9 @@
 
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
-(defmulti step identity)
-
 (def rp2-a (rp2/rp2 2  4 2))
 (def rp2-b (rp2/rp2 3 -6 2))
-(def rp2-ab (rp2/cross rp2-a rp2-b))
+(def rp2-ab (rp2/cross rp2-b rp2-a))
 
 ; 2D xy axes:
 (insert-geom (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
@@ -212,99 +208,191 @@
 ;(insert-geom (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
 ;(insert-geom (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
 
-(def geom-line-a (geom/line rp2-a { :id :line-a }))
+(def geom-line-a (geom/line rp2-a ))
 (def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
                                   (str (:x rp2-a) "x + " (:y rp2-a) "y + " (:z rp2-a) " = 0")
-                                  { :id :line-a-label }))
-(def geom-plane-a (geom/plane rp2-a { :id :plane-a, :transparent true, :color 0xFFFFFF }))
-(def geom-vector-a (geom/vector rp2-a { :id :vector-a }))
+                                  ))
+(def geom-plane-a (geom/plane rp2-a { :transparent true, :color 0xFFFFFF }))
+(def geom-vector-a (geom/vector rp2-a ))
 (def geom-vector-a-label (geom/text [(:x rp2-a) (:y rp2-a) (:z rp2-a)]
                                   (str "(" (:x rp2-a) "," (:y rp2-a) "," (:z rp2-a) ")")
-                                  { :id :vector-a-label }))
+                                  ))
 
-(def geom-line-b (geom/line rp2-b { :id :line-b }))
+(def geom-line-b (geom/line rp2-b ))
 (def geom-line-b-label (geom/text (first (obj3/segment-endpoints rp2-b))
                                   (str (:x rp2-b) "x + " (:y rp2-b) "y + " (:z rp2-b) " = 0")
-                                  { :id :line-b-label }))
-(def geom-plane-b (geom/plane rp2-b { :id :plane-b, :transparent true, :color 0xFFFFFF }))
-(def geom-vector-b (geom/vector rp2-b { :id :vector-b }))
+                                  ))
+(def geom-plane-b (geom/plane rp2-b { :transparent true, :color 0xFFFFFF }))
+(def geom-vector-b (geom/vector rp2-b ))
 (def geom-vector-b-label (geom/text [(:x rp2-b) (:y rp2-b) (:z rp2-b)]
                                   (str "(" (:x rp2-b) "," (:y rp2-b) "," (:z rp2-b) ")")
-                                  { :id :vector-b-label }))
+                                  ))
 
-(def geom-point-ab (geom/point rp2-ab { :id :point-ab }))
+(def geom-point-ab (geom/point rp2-ab))
 (def geom-point-ab-label
   (let [p (rp2/normalize rp2-ab)]
-    (geom/text [(:x p) (+ (:y p) 0.2) (:z p)] "?" { :id :point-ab-label })))
+    (geom/text [(:x p) (+ (:y p) 0.2) (:z p)] "?" )))
+(def geom-vector-ab (geom/vector rp2-ab ))
+(def geom-vector-ab-label (geom/text [(:x rp2-ab) (:y rp2-ab) (:z rp2-ab)]
+                                  (str "a X b")))
 
 
-(def geom-3d-x-axis (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2, :id :3d-x-axis }))
-(def geom-3d-y-axis (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2, :id :3d-y-axis }))
-(def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2, :id :3d-z-axis }))
+(def geom-3d-x-axis (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2 }))
+(def geom-3d-y-axis (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
+(def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
 
-(def geom-z1-disc (geom/zdisc disc-radius 1 { :color 0xFFFFFF, :transparent true, :id :z1-disc }))
+(def geom-z1-disc (geom/zdisc disc-radius 1 { :color 0xFFFFFF, :transparent true }))
 
-(defmethod step 1 []
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def steps (atom []))
+
+(defn create-step [f] (swap! steps (fn [steps] (conj steps f))))
+
+(defn take-step []
+  ((first @steps))
+  (swap! steps (fn [steps] (rest steps))))
+
+(create-step #(do
  (insert-geom geom-line-a)
  (insert-geom geom-line-a-label)
-)
+))
 
-(defmethod step 2 []
+(create-step #(do
  (insert-geom geom-line-b)
  (insert-geom geom-line-b-label)
-)
+))
 
-(defmethod step 3 []
+(create-step #(do
   (insert-geom geom-point-ab)
   (insert-geom geom-point-ab-label)
-)
+))
 
-(defmethod step 4 []
+(create-step #(do
   (insert-geom geom-3d-x-axis)
   (insert-geom geom-3d-y-axis)
   (insert-geom geom-3d-z-axis)
-)
+))
 
-(defmethod step 5 []
+(create-step #(do
   ; plane (disc) at height z=1:
   (insert-geom geom-z1-disc)
-)
+))
 
-(defmethod step 6 []
+(create-step #(do
   (remove-geom geom-point-ab)
   (remove-geom geom-point-ab-label)
   (remove-geom geom-line-b)
   (remove-geom geom-line-b-label)
-)
+))
 
-(defmethod step 7 []
+(create-step #(do
   (insert-geom geom-plane-a)
-)
+))
 
-(defmethod step 8 []
+(create-step #(do
   (insert-geom geom-vector-a)
   (insert-geom geom-vector-a-label)
-)
+))
 
-(defmethod step 9 []
+(create-step #(do
   (remove-geom geom-line-a-label)
   (insert-geom geom-line-b)
   (insert-geom geom-line-b-label)
-)
+))
 
-(defmethod step 10 []
+(create-step #(do
   (insert-geom geom-plane-b)
-)
+))
 
-(defmethod step 11 []
+(create-step #(do
   (insert-geom geom-vector-b)
   (insert-geom geom-vector-b-label)
-)
+))
 
-(defmethod step :default [])
+(create-step #(do
+  (insert-geom geom-vector-ab)
+  (insert-geom geom-vector-ab-label)
+))
+
+
+
+;(create-step stepsdo
+; (insert-geom geom-line-b)
+; (insert-geom geom-line-b-label)
+;)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;xyzzy (defmulti step identity)
+;;;xyzzy 
+;;;xyzzy (defmethod step 1 []
+;;;xyzzy  (insert-geom geom-line-a)
+;;;xyzzy  (insert-geom geom-line-a-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 2 []
+;;;xyzzy  (insert-geom geom-line-b)
+;;;xyzzy  (insert-geom geom-line-b-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 3 []
+;;;xyzzy   (insert-geom geom-point-ab)
+;;;xyzzy   (insert-geom geom-point-ab-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 4 []
+;;;xyzzy   (insert-geom geom-3d-x-axis)
+;;;xyzzy   (insert-geom geom-3d-y-axis)
+;;;xyzzy   (insert-geom geom-3d-z-axis)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 5 []
+;;;xyzzy   ; plane (disc) at height z=1:
+;;;xyzzy   (insert-geom geom-z1-disc)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 6 []
+;;;xyzzy   (remove-geom geom-point-ab)
+;;;xyzzy   (remove-geom geom-point-ab-label)
+;;;xyzzy   (remove-geom geom-line-b)
+;;;xyzzy   (remove-geom geom-line-b-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 7 []
+;;;xyzzy   (insert-geom geom-plane-a)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 8 []
+;;;xyzzy   (insert-geom geom-vector-a)
+;;;xyzzy   (insert-geom geom-vector-a-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 9 []
+;;;xyzzy   (remove-geom geom-line-a-label)
+;;;xyzzy   (insert-geom geom-line-b)
+;;;xyzzy   (insert-geom geom-line-b-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 10 []
+;;;xyzzy   (insert-geom geom-plane-b)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 11 []
+;;;xyzzy   (insert-geom geom-vector-b)
+;;;xyzzy   (insert-geom geom-vector-b-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step 12 []
+;;;xyzzy   (insert-geom geom-vector-ab)
+;;;xyzzy   (insert-geom geom-vector-ab-label)
+;;;xyzzy )
+;;;xyzzy 
+;;;xyzzy (defmethod step :default [])
 
 (defn stepforward [n]
-  (step n)
+  (take-step)
 )
 
 

@@ -93,12 +93,12 @@
 
 ; a convenient multi-method for converting typed goems to THREE.js objects
 
-(defmulti from-typed-goem first)
-
-(defmethod from-typed-goem :vector [[_ g]]   (vector-from-typed-goem g))
-(defmethod from-typed-goem :line   [[_ g]]   (line-from-typed-goem   g))
-(defmethod from-typed-goem :point  [[_ g]]   (point-from-typed-goem  g))
-(defmethod from-typed-goem :plane  [[_ g]]   (plane-from-typed-goem  g))
+;(defmulti from-typed-goem first)
+;
+;(defmethod from-typed-goem :vector [[_ g]]   (vector-from-typed-goem g))
+;(defmethod from-typed-goem :line   [[_ g]]   (line-from-typed-goem   g))
+;(defmethod from-typed-goem :point  [[_ g]]   (point-from-typed-goem  g))
+;(defmethod from-typed-goem :plane  [[_ g]]   (plane-from-typed-goem  g))
 
 ; so now we can say
 ;    (from-typed-goem TYPED-GOEM)

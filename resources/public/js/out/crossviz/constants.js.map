@@ -4,7 +4,7 @@
  "sources":["constants.cljs"],
  "lineCount":8,
  "mappings":
- ";AAAA;;AAEA,4BAAA,5BAAKA;AACL,+BAAA,/BAAKC;AACL,6BAAA,7BAAKC",
+ ";AAAA;;AAEA,8BAAA,9BAAKA;AACL,iCAAA,jCAAKC;AACL,+BAAA,/BAAKC",
  "names":
  ["crossviz.constants/univDiam", "crossviz.constants/vectorColor",
   "crossviz.constants/lineColor"]}

@@ -4,7 +4,7 @@
  "sources":["math.cljs"],
  "lineCount":10,
  "mappings":
- ";AAAA;;AAEA,AAAKA,iBAAK,AAAMC;AAChB,AAAKC,kBAAK,AAAOD;AACjB,AAAKE,kBAAK,AAAOF;AACjB,AAAKG,mBAAK,AAAQH;AAClB,AAAKI,kBAAK,AAAOJ",
+ ";AAAA;;AAEA,AAAKA,mBAAK,AAAMC;AAChB,AAAKC,oBAAK,AAAOD;AACjB,AAAKE,oBAAK,AAAOF;AACjB,AAAKG,qBAAK,AAAQH;AAClB,AAAKI,oBAAK,AAAOJ",
  "names":
- ["crossviz.math/PI", "js/Math", "crossviz.math/cos", "crossviz.math/sin",
-  "crossviz.math/sqrt", "crossviz.math/abs"]}
+ ["crossviz.math/PI", "js/Math", "crossviz.math/cos",
+  "crossviz.math/sin", "crossviz.math/sqrt", "crossviz.math/abs"]}
