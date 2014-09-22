@@ -212,15 +212,13 @@
 (def rp2-ab (rp2/cross rp2-b rp2-a))
 
 ; 2D xy axes:
-(def geom-2d-x-axis (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
-(def geom-2d-y-axis (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
-(def geom-2d-x-axis-label (geom/text [disc-radius 0 1] "x"))
-(def geom-2d-y-axis-label (geom/text [0 disc-radius 1] "y"))
+(def geom-2d-axes
+  [ (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 })
+    (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 })
+    (geom/text [disc-radius 0 1] "x")
+    (geom/text [0 disc-radius 1] "y") ])
 
-(insert-geom geom-2d-x-axis)
-(insert-geom geom-2d-y-axis)
-(insert-geom geom-2d-x-axis-label)
-(insert-geom geom-2d-y-axis-label)
+(insert-geom geom-2d-axes)
 
 (def geom-line-a (geom/line rp2-a ))
 (def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
@@ -256,7 +254,6 @@
 (def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
 
 (def geom-z1-disc (geom/zdisc disc-radius 1 { :color 0xFFFFFF, :transparent true }))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -307,10 +304,7 @@
 
 (create-step #(do
   (remove-geom geom-z1-disc)
-  (remove-geom geom-2d-x-axis)
-  (remove-geom geom-2d-y-axis)
-  (remove-geom geom-2d-x-axis-label)
-  (remove-geom geom-2d-y-axis-label)
+  (remove-geom geom-2d-axes)
 ))
 
 (create-step #(do
