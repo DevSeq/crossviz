@@ -7,6 +7,8 @@
   (:require-macros [crossviz.macros :as mymacros])
 )
 
+(defn log [msg] (.log js/console msg))
+
 ;;; (defn typed-goems [state]
 ;;;   ; This function takes a state map and returns a list of all the objects that should
 ;;;   ; be displayed.  More specifically, it returns a list of vectors, where each vector
@@ -57,6 +59,19 @@
 ; whenever anything is inserted into or removed from @geoms.
 (def world (atom (js.THREE.Object3D.)))
 
+(defn add-geom-to-world [g]
+  ; convert the geom `g` to an obj3 and add it to the @world
+  ; if `g` is a :text geom, add it to the @texts vector
+  ; if `g` is a vector rather than a geom, recursively run add-geom-to-world
+  ; on each element of it
+  ; return nil
+  (if (vector? g)
+    (doall (map add-geom-to-world g))
+    (let [obj (geom/to-obj3 g)]
+      (if (= (:type g) :text) (swap! texts (fn [ts] (conj ts obj))))
+      (.add @world obj)))
+  nil)
+
 ; The following arranges for the enclosed function (fn ...) to be called whenever
 ; the value of the world-state atom changes.  The function (fn ...) is called with
 ; 4 args, the last of which is the new value of world-state.
@@ -72,10 +87,12 @@
 ;;;     (.add @world textobj3)
 ;;;     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
     (reset! texts [])
-    (doseq [g new-geoms]
-      (let [obj (geom/to-obj3 g)]
-        (if (= (:type g) :text) (swap! texts (fn [ts] (conj ts obj))))
-        (.add @world obj)))
+
+;    (doseq [g new-geoms]
+;      (let [obj (geom/to-obj3 g)]
+;        (if (= (:type g) :text) (swap! texts (fn [ts] (conj ts obj))))
+;        (.add @world obj)))
+    (doseq [g new-geoms] (add-geom-to-world g))
 
     (.add scene-root @world)
    ))
@@ -195,18 +212,15 @@
 (def rp2-ab (rp2/cross rp2-b rp2-a))
 
 ; 2D xy axes:
-(insert-geom (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
-(insert-geom (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
-(insert-geom (geom/text [disc-radius 0 1] "x"))
-(insert-geom (geom/text [0 disc-radius 1] "y"))
+(def geom-2d-x-axis (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 }))
+(def geom-2d-y-axis (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 }))
+(def geom-2d-x-axis-label (geom/text [disc-radius 0 1] "x"))
+(def geom-2d-y-axis-label (geom/text [0 disc-radius 1] "y"))
 
-;(insert-geom (geom/line rp2-a))
-;(insert-geom (geom/line rp2-b))
-;(insert-geom (geom/vector rp2-a))
-;(insert-geom (geom/vector rp2-b))
-;(insert-geom (geom/segment3 [0 0 0] [2 0 0] { :color 0xFF0000, :linewidth 2 }))
-;(insert-geom (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
-;(insert-geom (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
+(insert-geom geom-2d-x-axis)
+(insert-geom geom-2d-y-axis)
+(insert-geom geom-2d-x-axis-label)
+(insert-geom geom-2d-y-axis-label)
 
 (def geom-line-a (geom/line rp2-a ))
 (def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
@@ -292,6 +306,14 @@
 ))
 
 (create-step #(do
+  (remove-geom geom-z1-disc)
+  (remove-geom geom-2d-x-axis)
+  (remove-geom geom-2d-y-axis)
+  (remove-geom geom-2d-x-axis-label)
+  (remove-geom geom-2d-y-axis-label)
+))
+
+(create-step #(do
   (insert-geom geom-vector-a)
   (insert-geom geom-vector-a-label)
 ))
@@ -316,122 +338,6 @@
   (insert-geom geom-vector-ab-label)
 ))
 
-
-
-;(create-step stepsdo
-; (insert-geom geom-line-b)
-; (insert-geom geom-line-b-label)
-;)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;xyzzy (defmulti step identity)
-;;;xyzzy 
-;;;xyzzy (defmethod step 1 []
-;;;xyzzy  (insert-geom geom-line-a)
-;;;xyzzy  (insert-geom geom-line-a-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 2 []
-;;;xyzzy  (insert-geom geom-line-b)
-;;;xyzzy  (insert-geom geom-line-b-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 3 []
-;;;xyzzy   (insert-geom geom-point-ab)
-;;;xyzzy   (insert-geom geom-point-ab-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 4 []
-;;;xyzzy   (insert-geom geom-3d-x-axis)
-;;;xyzzy   (insert-geom geom-3d-y-axis)
-;;;xyzzy   (insert-geom geom-3d-z-axis)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 5 []
-;;;xyzzy   ; plane (disc) at height z=1:
-;;;xyzzy   (insert-geom geom-z1-disc)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 6 []
-;;;xyzzy   (remove-geom geom-point-ab)
-;;;xyzzy   (remove-geom geom-point-ab-label)
-;;;xyzzy   (remove-geom geom-line-b)
-;;;xyzzy   (remove-geom geom-line-b-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 7 []
-;;;xyzzy   (insert-geom geom-plane-a)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 8 []
-;;;xyzzy   (insert-geom geom-vector-a)
-;;;xyzzy   (insert-geom geom-vector-a-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 9 []
-;;;xyzzy   (remove-geom geom-line-a-label)
-;;;xyzzy   (insert-geom geom-line-b)
-;;;xyzzy   (insert-geom geom-line-b-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 10 []
-;;;xyzzy   (insert-geom geom-plane-b)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 11 []
-;;;xyzzy   (insert-geom geom-vector-b)
-;;;xyzzy   (insert-geom geom-vector-b-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step 12 []
-;;;xyzzy   (insert-geom geom-vector-ab)
-;;;xyzzy   (insert-geom geom-vector-ab-label)
-;;;xyzzy )
-;;;xyzzy 
-;;;xyzzy (defmethod step :default [])
-
 (defn stepforward [n]
   (take-step)
-)
-
-
-; 
-; 
-; 
-; (insert-geom (geom/plane rp2-a { :color 0xFFFFFF, :transparent true }))
-; (insert-geom (geom/vector rp2-a))
-; (insert-geom (geom/plane rp2-b { :color 0xFFFFFF, :transparent true }))
-; (insert-geom (geom/vector rp2-b))
-; 
-; (insert-geom (geom/vector rp2-ab))
-
-
-#_(let [line1 (rp2/rp2 1 2 2)
-      line2 (rp2/rp2 -1 2 1.5)
-      pt1    (rp2/cross line1 line2)
-      ]
-  
-;  (insert-geom (geom/segment3 [0 0 0] [1 0 0] { :color 0xFF0000 }))
-;  (insert-geom (geom/segment3 [0 0 0] [0 1 0] { :color 0x00FF00 }))
-;  (insert-geom (geom/segment3 [0 0 0] [0 0 1] { :color 0x0000FF }))
-
-
-;;;   (add-t! :vector line1)
-;;;   (add-t! :plane  line1)
-;;;   (add-t! :line   line1)
-;;;  
-;;;   (add-t! :vector line2)
-;;;   (add-t! :plane  line2)
-;;;   (add-t! :line   line2)
-;;; 
-;;;   (add-t! :point  pt1)
-;;;   (add-t! :vector  pt1)
-)
-
-#_(let
-    [g (geom/segment3 [0 0 0] [0 0 1] { :color 0xFF0000 })]
-
-  (.log js/console 
-        (obj3/segment3 (:a g) (:b g) g))
 )
