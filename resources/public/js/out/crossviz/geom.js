@@ -5,16 +5,11 @@ goog.require('crossviz.rp2');
 goog.require('crossviz.rp2');
 goog.require('crossviz.obj3');
 goog.require('crossviz.obj3');
-crossviz.geom.current_id = cljs.core.atom.call(null,1000);
-crossviz.geom.next_id = (function next_id(){cljs.core.swap_BANG_.call(null,crossviz.geom.current_id,(function (id){return (id + 1);
-}));
-return cljs.core.deref.call(null,crossviz.geom.current_id);
-});
 crossviz.geom.segment3 = (function() {
 var segment3 = null;
 var segment3__2 = (function (a,b){return segment3.call(null,a,b,null);
 });
-var segment3__3 = (function (a,b,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"segment3","segment3",2069773010),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"b","b",1013904340),b,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var segment3__3 = (function (a,b,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"segment3","segment3",2069773010),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"b","b",1013904340),b);
 });
 segment3 = function(a,b,props){
 switch(arguments.length){
@@ -34,7 +29,7 @@ crossviz.geom.text = (function() {
 var text = null;
 var text__2 = (function (a,string){return text.call(null,a,string,null);
 });
-var text__3 = (function (a,string,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"text","text",1017460895),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"string","string",4416885635),string,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var text__3 = (function (a,string,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"text","text",1017460895),new cljs.core.Keyword(null,"a","a",1013904339),a,new cljs.core.Keyword(null,"string","string",4416885635),string);
 });
 text = function(a,string,props){
 switch(arguments.length){
@@ -54,7 +49,7 @@ crossviz.geom.zdisc = (function() {
 var zdisc = null;
 var zdisc__2 = (function (r,z){return zdisc.call(null,r,z,null);
 });
-var zdisc__3 = (function (r,z,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"zdisc","zdisc",1129657473),new cljs.core.Keyword(null,"r","r",1013904356),r,new cljs.core.Keyword(null,"z","z",1013904364),z,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var zdisc__3 = (function (r,z,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"zdisc","zdisc",1129657473),new cljs.core.Keyword(null,"r","r",1013904356),r,new cljs.core.Keyword(null,"z","z",1013904364),z);
 });
 zdisc = function(r,z,props){
 switch(arguments.length){
@@ -74,7 +69,7 @@ crossviz.geom.line = (function() {
 var line = null;
 var line__1 = (function (p){return line.call(null,p,null);
 });
-var line__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"line","line",1017226086),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var line__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"line","line",1017226086),new cljs.core.Keyword(null,"p","p",1013904354),p);
 });
 line = function(p,props){
 switch(arguments.length){
@@ -94,7 +89,7 @@ crossviz.geom.point = (function() {
 var point = null;
 var point__1 = (function (p){return point.call(null,p,null);
 });
-var point__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"point","point",1120749826),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var point__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"point","point",1120749826),new cljs.core.Keyword(null,"p","p",1013904354),p);
 });
 point = function(p,props){
 switch(arguments.length){
@@ -114,7 +109,7 @@ crossviz.geom.plane = (function() {
 var plane = null;
 var plane__1 = (function (p){return plane.call(null,p,null);
 });
-var plane__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"plane","plane",1120652750),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var plane__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"plane","plane",1120652750),new cljs.core.Keyword(null,"p","p",1013904354),p);
 });
 plane = function(p,props){
 switch(arguments.length){
@@ -134,7 +129,7 @@ crossviz.geom.vector = (function() {
 var vector = null;
 var vector__1 = (function (p){return vector.call(null,p,null);
 });
-var vector__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"vector","vector",4488484021),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"id","id",1013907597),crossviz.geom.next_id.call(null));
+var vector__2 = (function (p,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"vector","vector",4488484021),new cljs.core.Keyword(null,"p","p",1013904354),p);
 });
 vector = function(p,props){
 switch(arguments.length){

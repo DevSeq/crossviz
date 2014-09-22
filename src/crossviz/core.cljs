@@ -48,7 +48,7 @@
 
 (defn remove-geom [g]
   (swap! geoms
-         (fn [gs] (filter #(not= (:id %) (:id g)) gs))))
+         (fn [gs] (filter #(not= % g) gs))))
 
 ; @texts is a list of all the text objects in the world; this is a list of obj3
 ; objects which need to be kept camera-facing
