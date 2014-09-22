@@ -9,43 +9,18 @@
 
 (defn log [msg] (.log js/console msg))
 
-;;; (defn typed-goems [state]
-;;;   ; This function takes a state map and returns a list of all the objects that should
-;;;   ; be displayed.  More specifically, it returns a list of vectors, where each vector
-;;;   ; is of the form [type g], indicating that the goem `g` should be displyed as type
-;;;   ; `type`.
-;;;   ;
-;;;   ; In general, we call a vector of the form [type g] a "typed goem".  So this function
-;;;   ; takes a world state map and returns a list of typed goems.
-;;;   (mapcat 
-;;;    (fn [[g types]] 
-;;;        (map (fn [type] [type g]) types))
-;;;    state))
-
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
 (def scene-root (js/THREE.Scene.))
 
-;;; ; @world-state is a map whose keys are goems; the value for each goem is a set of display
-;;; ; types for that goem, indicating one or more ways that the goem should be displayed.
-;;; ;
-;;; ; Note that this data model does not allow two goems with the same coordinates to
-;;; ; be displayed as the same type, which is a limitation that we might want to remove
-;;; ; in the future.
-;;; (def world-state (atom {}))
-
-; @geoms is a list of all the geoms to be displayed in the world
+; @geoms is the master list of all the geoms to be displayed
 (def geoms (atom []))
 
-;(defn insert-geom [g]
-;  (let [id (or (:id g) (next-id))
-;        ng (merge g {:id id})]
-;    (swap! geoms (fn [gs] (conj gs ng)))
-;    ng))
-
+; insert a geom into the master list
 (defn insert-geom [g]
   (swap! geoms (fn [gs] (conj gs g))))
 
+; remove a geom from the master list
 (defn remove-geom [g]
   (swap! geoms
          (fn [gs] (filter #(not= % g) gs))))
@@ -79,45 +54,13 @@
   (fn [_ _ _ new-geoms]
     (.remove scene-root @world)
     (reset! world (js.THREE.Object3D.))
-;;;     (.add @world (obj3/axes 2.0))
-;;;     (.add @world (obj3/disc
-;;;                   (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
-;;;                         1)
-;;;                   )
-;;;     (.add @world textobj3)
-;;;     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
     (reset! texts [])
-
-;    (doseq [g new-geoms]
-;      (let [obj (geom/to-obj3 g)]
-;        (if (= (:type g) :text) (swap! texts (fn [ts] (conj ts obj))))
-;        (.add @world obj)))
     (doseq [g new-geoms] (add-geom-to-world g))
-
     (.add scene-root @world)
    ))
 
 ; if @animating is true, the world is always spinning
 (def animating (atom false))
-
-;;; (defn add-t* [type state g]
-;;;   ; Returns a new world-state map in which `type` has been added to the display-type set
-;;;   ; for the goem `g`.  Note that this function does not modify anything --- it takes
-;;;   ; a world-state map as an arg, and returns a new world-state map.
-;;;   (update-in state [g] 
-;;;     (fn [s] (conj (or s #{}) type))))
-;;; 
-;;; (defn add-t! [type g]
-;;;   ; This function modifies the world-state atom's value to add `type` to the display-type
-;;;   ; set for the goem `g`.
-;;;   (swap! world-state
-;;;          (fn [state]
-;;;            (add-t* type state g))))
-;;; 
-;;; (defn to-obj3-list [state]
-;;;   ; this function takes a world state map and returns a list of THREE.js objects
-;;;   (map obj3/from-typed-goem (typed-goems state))
-;;; )
 
 (defn createCameraControls [camera domElement]
   ; takes a THREE.js camera, and a dom element, and returns
@@ -184,34 +127,12 @@
   (run)
 )
 
-;;; ; The following arranges for the enclosed function (fn ...) to be called whenever
-;;; ; the value of the world-state atom changes.  The function (fn ...) is called with
-;;; ; 4 args, the last of which is the new value of world-state.
-;;; (add-watch world-state :world-watch 
-;;;   (fn [_ _ _ new-world-state]
-;;;     (.remove scene-root @world)
-;;;     (reset! world (js.THREE.Object3D.))
-;;;     (.add @world (obj3/axes 2.0))
-;;;     (.add @world (obj3/disc
-;;;                   (math/sqrt (- (* constants/univDiam constants/univDiam) 1))
-;;;                         1)
-;;;                   )
-;;;     (.add @world textobj3)
-;;;     (doseq [obj (to-obj3-list new-world-state)] (.add @world obj))
-;;;     (.add scene-root @world)
-;;;    ))
-
-;(defn step [n]
-;  (.log js/console (str "cljs step "  n))
-;)
-
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
 (def rp2-a (rp2/rp2 2  4 2))
 (def rp2-b (rp2/rp2 3 -6 2))
 (def rp2-ab (rp2/cross rp2-b rp2-a))
 
-; 2D xy axes:
 (def geom-2d-axes
   [ (geom/segment3 [(- disc-radius) 0 1] [disc-radius 0 1] { :color 0xFF0000 })
     (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 })
@@ -261,7 +182,7 @@
 
 (defn create-step [f] (swap! steps (fn [steps] (conj steps f))))
 
-(defn take-step []
+(defn takestep []
   ((first @steps))
   (swap! steps (fn [steps] (rest steps))))
 
@@ -287,7 +208,6 @@
 ))
 
 (create-step #(do
-  ; plane (disc) at height z=1:
   (insert-geom geom-z1-disc)
 ))
 
@@ -331,7 +251,3 @@
   (insert-geom geom-vector-ab)
   (insert-geom geom-vector-ab-label)
 ))
-
-(defn stepforward [n]
-  (take-step)
-)
