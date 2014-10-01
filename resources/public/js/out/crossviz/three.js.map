@@ -1,0 +1,10 @@
+{"version":3,
+ "file":
+ "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/three.js",
+ "sources":["three.cljs"],
+ "lineCount":43,
+ "mappings":
+ ";AAAA;;AAQA;;;uBAAA,vBAAMA;sCAAN,NAAgBC,MAAO,OAACC,YAAeC,YAAeF;;;IAAtCA;EAAAA;iCAAAA;;;IAAAA;uBAAAA;;;;;;AAGhB;;;0BAAA,1BAAMG;yCAAN,NAAmBH,MAAO,OAACC,YAAeG,eAAkBJ;;;IAAzCA;EAAAA;oCAAAA;;;IAAAA;0BAAAA",
+ "names":
+ ["crossviz.three/Scene", "args", "js/doConstruct", "js/THREE.Scene",
+  "crossviz.three/Object3D", "js/THREE.Object3D"]}

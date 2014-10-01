@@ -1,6 +1,7 @@
 (ns crossviz.core
-  (:require [crossviz.rp2 :as rp2]
-            [crossviz.obj3 :as obj3]
+  (:require [crossviz.three :as three]
+            [crossviz.rp2 :as rp2]
+            [crossviz.obj3 :as obj3 :refer [vector3]]
             [crossviz.geom :as geom]
             [crossviz.math :as math]
             [crossviz.constants :as constants])
@@ -11,7 +12,8 @@
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
-(def scene-root (js/THREE.Scene.))
+;(def scene-root (js/THREE.Scene.))
+(def scene-root (three/Scene))
 
 ; @geoms is the master list of all the geoms to be displayed
 (def geoms (atom []))
@@ -32,7 +34,8 @@
 ; @world is an obj3 object that gets added to `scene-root`; it's updated with a new
 ; value (and replaced in `scene-root`) whenever the value of @geoms changes, i.e.
 ; whenever anything is inserted into or removed from @geoms.
-(def world (atom (js.THREE.Object3D.)))
+;(def world (atom (js.THREE.Object3D.)))
+(def world (atom (three/Object3D)))
 
 (defn add-geom-to-world [g]
   ; convert the geom `g` to an obj3 and add it to the @world
@@ -66,6 +69,7 @@
   ; takes a THREE.js camera, and a dom element, and returns
   ; a TrackballControls object
   (let [controls (js/THREE.TrackballControls. camera domElement)
+  ;(let [controls (three/TrackballControls camera domElement)
         radius   3]
 	(set! (.-rotateSpeed           controls)  1.0)
 	(set! (.-zoomSpeed             controls)  3.0)
@@ -115,7 +119,7 @@
   (.setClearColor renderer 0x444455 1)
   (.set (.-position camera) 1  -5  3)
   (.set (.-up camera) 0 0 1)
-  (.lookAt camera (js/THREE.Vector3. 0 0 0))
+  (.lookAt camera (vector3 0 0 0))
   (.set (.-position light1) 100 0 0)
   (.set (.-position light2) 0 -100 0)
   (.set (.-position light3) 0  100 0)
@@ -138,8 +142,6 @@
     (geom/segment3 [0 (- disc-radius) 1] [0 disc-radius 1] { :color 0x00FF00 })
     (geom/text [disc-radius 0 1] "x")
     (geom/text [0 disc-radius 1] "y") ])
-
-(insert-geom geom-2d-axes)
 
 (def geom-line-a (geom/line rp2-a ))
 (def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
@@ -185,6 +187,8 @@
 (defn takestep []
   ((first @steps))
   (swap! steps (fn [steps] (rest steps))))
+
+(insert-geom geom-2d-axes)
 
 (create-step #(do
  (insert-geom geom-line-a)

@@ -11,12 +11,6 @@
   (:require [crossviz.obj3 :as obj3]
             [crossviz.rp2 :as rp2]))
 
-;(def current-id (atom 1000))
-;
-;(defn next-id []
-;  (swap! current-id (fn [id] (inc id)))
-;  @current-id)
-
 (defn segment3
   ([a b]
      (segment3 a b nil))
@@ -59,9 +53,6 @@
   ([p props]
      (assoc props :type :vector :p p)))
 
-;(defmulti to-obj3 :type)
-
-;(defmulti to-obj3 (fn [obj] (or (:type obj) :group)))
 (defmulti to-obj3 :type)
 
 (defmethod to-obj3 :segment3 [g]   (obj3/segment3 (:a g) (:b g) g))
@@ -78,7 +69,3 @@
 (defmethod to-obj3 :plane    [g]   (obj3/plane (:p g) g))
 
 (defmethod to-obj3 :vector   [g]   (obj3/vector (:p g) g))
-
-;(defmethod to-obj3 :group    [g]   (let [obj (js/THREE.Object3D.)]
-;                                     (doall (map #(.add obj %) g))
-;                                     obj))
