@@ -53,7 +53,15 @@
   ([p props]
      (assoc props :type :vector :p p)))
 
+(defn conehead
+  ([p h r]
+     (conehead p h r nil))
+  ([p h r props]
+     (assoc props :type :conehead :p p :h h :r r)))
+
 (defmulti to-obj3 :type)
+
+(defmethod to-obj3 :conehead [g]   (obj3/conehead (:p g) (:h g) (:r g) g))
 
 (defmethod to-obj3 :segment3 [g]   (obj3/segment3 (:a g) (:b g) g))
 

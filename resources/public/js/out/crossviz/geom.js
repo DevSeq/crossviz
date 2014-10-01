@@ -145,8 +145,30 @@ vector.cljs$core$IFn$_invoke$arity$2 = vector__2;
 return vector;
 })()
 ;
-crossviz.geom.to_obj3 = (function (){var method_table__4361__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var prefer_table__4362__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var method_cache__4363__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var cached_hierarchy__4364__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var hierarchy__4365__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",3129050535),cljs.core.get_global_hierarchy.call(null));return (new cljs.core.MultiFn("to-obj3",new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"default","default",2558708147),hierarchy__4365__auto__,method_table__4361__auto__,prefer_table__4362__auto__,method_cache__4363__auto__,cached_hierarchy__4364__auto__));
+crossviz.geom.conehead = (function() {
+var conehead = null;
+var conehead__3 = (function (p,h,r){return conehead.call(null,p,h,r,null);
+});
+var conehead__4 = (function (p,h,r,props){return cljs.core.assoc.call(null,props,new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"conehead","conehead",4727777013),new cljs.core.Keyword(null,"p","p",1013904354),p,new cljs.core.Keyword(null,"h","h",1013904346),h,new cljs.core.Keyword(null,"r","r",1013904356),r);
+});
+conehead = function(p,h,r,props){
+switch(arguments.length){
+case 3:
+return conehead__3.call(this,p,h,r);
+case 4:
+return conehead__4.call(this,p,h,r,props);
+}
+throw(new Error('Invalid arity: ' + arguments.length));
+};
+conehead.cljs$core$IFn$_invoke$arity$3 = conehead__3;
+conehead.cljs$core$IFn$_invoke$arity$4 = conehead__4;
+return conehead;
+})()
+;
+crossviz.geom.to_obj3 = (function (){var method_table__4339__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var prefer_table__4340__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var method_cache__4341__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var cached_hierarchy__4342__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);var hierarchy__4343__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",3129050535),cljs.core.get_global_hierarchy.call(null));return (new cljs.core.MultiFn("to-obj3",new cljs.core.Keyword(null,"type","type",1017479852),new cljs.core.Keyword(null,"default","default",2558708147),hierarchy__4343__auto__,method_table__4339__auto__,prefer_table__4340__auto__,method_cache__4341__auto__,cached_hierarchy__4342__auto__));
 })();
+cljs.core._add_method.call(null,crossviz.geom.to_obj3,new cljs.core.Keyword(null,"conehead","conehead",4727777013),(function (g){return crossviz.obj3.conehead.call(null,new cljs.core.Keyword(null,"p","p",1013904354).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"h","h",1013904346).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"r","r",1013904356).cljs$core$IFn$_invoke$arity$1(g),g);
+}));
 cljs.core._add_method.call(null,crossviz.geom.to_obj3,new cljs.core.Keyword(null,"segment3","segment3",2069773010),(function (g){return crossviz.obj3.segment3.call(null,new cljs.core.Keyword(null,"a","a",1013904339).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"b","b",1013904340).cljs$core$IFn$_invoke$arity$1(g),g);
 }));
 cljs.core._add_method.call(null,crossviz.geom.to_obj3,new cljs.core.Keyword(null,"text","text",1017460895),(function (g){return crossviz.obj3.text.call(null,new cljs.core.Keyword(null,"string","string",4416885635).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"a","a",1013904339).cljs$core$IFn$_invoke$arity$1(g),g);

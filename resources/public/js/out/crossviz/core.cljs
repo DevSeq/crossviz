@@ -190,6 +190,12 @@
 
 (insert-geom geom-2d-axes)
 
+(insert-geom (geom/conehead [1 1 1] 0.2 0.05 { :color 0xFFFFFF }))
+
+  (insert-geom geom-3d-x-axis)
+  (insert-geom geom-3d-y-axis)
+  (insert-geom geom-3d-z-axis)
+
 (create-step #(do
  (insert-geom geom-line-a)
  (insert-geom geom-line-a-label)

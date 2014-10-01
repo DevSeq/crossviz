@@ -21,7 +21,10 @@
                     })
 
 ; clojure-style wrapper for js/THREE.Vector3 constructor
-(defn vector3 [x y z] (js/THREE.Vector3. x y z))
+(defn vector3
+  ([] (js/THREE.Vector3.))
+  ([x y z] (js/THREE.Vector3. x y z)))
+
 
 (defn axis [v color]
   ; takes THREE.js Vector3 `v`, and a color `color`, and returns a
@@ -224,27 +227,44 @@
        obj)))
 
 
-(defn vector
-  ([p] (vector p nil))
-  ([{:keys [x y z]} props]
-     (let [g (js/THREE.Geometry.)]
-       (.push (.-vertices g) (vector3 x y z))
-       (.push (.-vertices g) (vector3 0 0 0))
-       (js/THREE.Line. g (js/THREE.LineBasicMaterial. (clj->js (merge default-props props)))))))
+; Return the 4x4 matrix that rotates the vector (0,0,1) so that it points
+; in the same direction as the Vector3 v.
+(defn matrixRotatingZTo [v]
+  (let [k     (vector3 0 0 1)
+        axis  (-> (vector3)
+                  (.crossVectors k v)
+                  (.normalize))
+        angle (-> k (.angleTo v))
+        R     (-> (js/THREE.Matrix4.)
+                  (.makeRotationAxis axis angle))]
+    R))
 
 (defn conehead
   ([p h r] (conehead h r nil))
-  ([{:keys [x y z]} h r props]
-     (let [g (js/THREE.Geometry.)
-           N 60
-           f (fn [v] v) ; replace f with a function that rotates & translates R3 to take origin
-                        ; to tip of vector [x,y,z], aligning z axis to that vector
-           ]
-       (.push (.-vertices g) (vector3 0 0 h))
+  ([[x y z] h r props]
+     (let [obj (js/THREE.Geometry.)
+           v   (vector3 x y z)
+           N   60]
+       (.push (.-vertices obj) (vector3 0 0 0))
        (doseq [i (range 0 (+ N 1))]
          (let [a (/ (* 2 math/PI i) N)]
-           (.push (.-vertices g) (vector3 (* r (math/cos a)) (* r (math/sin a)) z))
-           (.push (.-faces g) (js/THREE.Face3. 0 i (if (< i N) (+ i 1) 1)))))
-       (.computeBoundingSphere g)
-       (.computeFaceNormals g)
-       (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. (clj->js (merge default-props props)))))))
+           (.push (.-vertices obj) (vector3 (* r (math/cos a)) (* r (math/sin a)) (- h)))
+           (.push (.-faces obj) (js/THREE.Face3. 0 i (if (< i N) (+ i 1) 1)))))
+       (.computeBoundingSphere obj)
+       (.computeFaceNormals obj)
+       (-> obj (.applyMatrix (matrixRotatingZTo v)))
+       (-> obj (.applyMatrix (-> (js/THREE.Matrix4.) (.setPosition v))))
+       (js/THREE.Mesh. obj (js/THREE.MeshPhongMaterial. (clj->js (merge default-props props)))))))
+
+
+
+(defn vector
+  ([p] (vector p nil))
+  ([{:keys [x y z]} props]
+     (let [stalk (js/THREE.Geometry.)
+           obj (js/THREE.Object3D.)]
+       (.push (.-vertices stalk) (vector3 x y z))
+       (.push (.-vertices stalk) (vector3 0 0 0))
+       (.add obj (js/THREE.Line. stalk (js/THREE.LineBasicMaterial. (clj->js (merge default-props props)))))
+       (.add obj (conehead [x y z] 0.2 0.08 props))
+       obj)))
