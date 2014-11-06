@@ -133,8 +133,17 @@
 
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
+(def rp2-v1 (rp2/rp2 1 1 3))
+(def rp2-v2 (rp2/rp2 1 -1 2))
+(def rp2-v1v2 (rp2/cross rp2-v1 rp2-v2))
+
+(def geom-vector-v1 (geom/vector rp2-v1 ))
+(def geom-vector-v2 (geom/vector rp2-v2 ))
+(def geom-vector-v1v2 (geom/vector rp2-v1v2 ))
+
 (def rp2-a (rp2/rp2 2  4 2))
 (def rp2-b (rp2/rp2 3 -6 2))
+;(def rp2-b (rp2/rp2 2  4 3))
 (def rp2-ab (rp2/cross rp2-b rp2-a))
 
 (def geom-2d-axes
@@ -188,7 +197,37 @@
   ((first @steps))
   (swap! steps (fn [steps] (rest steps))))
 
-(insert-geom geom-2d-axes)
+; (insert-geom geom-2d-axes)
+
+(insert-geom geom-3d-x-axis)
+(insert-geom geom-3d-y-axis)
+(insert-geom geom-3d-z-axis)
+
+
+(create-step #(do
+  (insert-geom geom-vector-v1)
+))
+(create-step #(do
+  (insert-geom geom-vector-v2)
+))
+(create-step #(do
+  (insert-geom geom-vector-v1v2)
+))
+
+(create-step #(do
+  (remove-geom geom-vector-v1)
+  (remove-geom geom-vector-v2)
+  (remove-geom geom-vector-v1v2)
+  (remove-geom geom-3d-x-axis)
+  (remove-geom geom-3d-y-axis)
+  (remove-geom geom-3d-z-axis)
+))
+
+
+
+(create-step #(do
+  (insert-geom geom-2d-axes)
+))
 
 (insert-geom (geom/conehead [1 1 1] 0.2 0.05 { :color 0xFFFFFF }))
 
@@ -261,3 +300,8 @@
   (insert-geom geom-vector-ab)
   (insert-geom geom-vector-ab-label)
 ))
+
+(create-step #(do
+  (insert-geom geom-z1-disc)
+))
+
