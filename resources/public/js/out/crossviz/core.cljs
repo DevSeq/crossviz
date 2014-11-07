@@ -8,6 +8,8 @@
   (:require-macros [crossviz.macros :as mymacros])
 )
 
+(enable-console-print!)
+
 (defn log [msg] (.log js/console msg))
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
@@ -92,19 +94,41 @@
     container)
 )
 
-(let [
-      renderer  (js/THREE.WebGLRenderer. #js{:antialias true})
-      container (prepareContainer (.getElementById js/document "container") renderer)
-      width     (.-offsetWidth container)
-      height    (.-offsetHeight container)
-      camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 )
-      light1    (js/THREE.DirectionalLight.  0xffffff  0.5)
-      light2    (js/THREE.DirectionalLight.  0xffffff  0.6)
-      light3    (js/THREE.DirectionalLight.  0xffffff  0.7)
-      controls  (createCameraControls camera (.-domElement renderer))
-      run       (fn run []
+(def actions (atom ()))
+
+; The `actions` has a value which is a list of functions.  Each function in this list
+; should return either another function, or nil.  On each render pass, we
+; replace each function in this list with the result calling it, eliminating
+; any that return nil.  The `take-actions` function below implements this.
+
+(defn take-actions []
+  (swap! actions
+         (fn [actions] (doall (filter #(not (nil? %)) (map #(%) actions))))))
+
+; Add one or more action funtions to the `actions` list:
+(defn add-actions [& new-actions]
+  (swap! actions
+         (fn [actions]
+           (apply conj (cons actions new-actions)))))
+
+; This atom determines whether the trackball controls are active; we have to disable
+; them in order to take control of the camera for animating camera motions.  Not sure
+; yet how to re-enable them in a way that retains the new camera position/orientation.
+(def trackballing (atom true))
+
+(def  renderer  (js/THREE.WebGLRenderer. #js{:antialias true}))
+(def  container (prepareContainer (.getElementById js/document "container") renderer))
+(def  width     (.-offsetWidth container))
+(def  height    (.-offsetHeight container))
+(def  camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 ))
+(def  light1    (js/THREE.DirectionalLight.  0xffffff  0.5))
+(def  light2    (js/THREE.DirectionalLight.  0xffffff  0.6))
+(def  light3    (js/THREE.DirectionalLight.  0xffffff  0.7))
+(def  controls  (createCameraControls camera (.-domElement renderer)))
+(def  run       (fn run []
                   ; update the controls:
-                  (.update controls)
+                  (if @trackballing (.update controls))
+                  (take-actions)
                   ; re-orient any text objects to be camera-facing:
                   ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
                   (dorun (map #(.setFromRotationMatrix  (.-rotation %) (.-matrix camera)) @texts))
@@ -113,8 +137,8 @@
                   ; if animating, move time forward for next frame
                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
                   ; request next frame:
-                  (js/requestAnimationFrame run))
-      ]
+                  (js/requestAnimationFrame run)))
+
   (.setSize renderer width height)
   (.setClearColor renderer 0x444455 1)
   (.set (.-position camera) 1  -5  3)
@@ -129,7 +153,52 @@
   (.add scene-root camera)
   (.add scene-root @world)
   (run)
-)
+
+
+(def v1 (geom/vector (rp2/rp2 1 1 3) { :color 0xFFFF00 }))
+(insert-geom v1)
+
+(remove-geom v1)
+
+
+;;; (let [
+;;;       renderer  (js/THREE.WebGLRenderer. #js{:antialias true})
+;;;       container (prepareContainer (.getElementById js/document "container") renderer)
+;;;       width     (.-offsetWidth container)
+;;;       height    (.-offsetHeight container)
+;;;       camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 )
+;;;       light1    (js/THREE.DirectionalLight.  0xffffff  0.5)
+;;;       light2    (js/THREE.DirectionalLight.  0xffffff  0.6)
+;;;       light3    (js/THREE.DirectionalLight.  0xffffff  0.7)
+;;;       controls  (createCameraControls camera (.-domElement renderer))
+;;;       run       (fn run []
+;;;                   ; update the controls:
+;;;                   (.update controls)
+;;;                   ; re-orient any text objects to be camera-facing:
+;;;                   ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
+;;;                   (dorun (map #(.setFromRotationMatrix  (.-rotation %) (.-matrix camera)) @texts))
+;;;                   ; render the scene
+;;;                   (.render renderer scene-root camera)
+;;;                   ; if animating, move time forward for next frame
+;;;                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
+;;;                   ; request next frame:
+;;;                   (js/requestAnimationFrame run))
+;;;       ]
+;;;   (.setSize renderer width height)
+;;;   (.setClearColor renderer 0x444455 1)
+;;;   (.set (.-position camera) 1  -5  3)
+;;;   (.set (.-up camera) 0 0 1)
+;;;   (.lookAt camera (vector3 0 0 0))
+;;;   (.set (.-position light1) 100 0 0)
+;;;   (.set (.-position light2) 0 -100 0)
+;;;   (.set (.-position light3) 0  100 0)
+;;;   (.add camera light1)
+;;;   (.add camera light2)
+;;;   (.add camera light3)
+;;;   (.add scene-root camera)
+;;;   (.add scene-root @world)
+;;;   (run)
+;;; )
 
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
@@ -203,7 +272,6 @@
 (insert-geom geom-3d-y-axis)
 (insert-geom geom-3d-z-axis)
 
-
 (create-step #(do
   (insert-geom geom-vector-v1)
 ))
@@ -229,7 +297,6 @@
   (insert-geom geom-2d-axes)
 ))
 
-(insert-geom (geom/conehead [1 1 1] 0.2 0.05 { :color 0xFFFFFF }))
 
   (insert-geom geom-3d-x-axis)
   (insert-geom geom-3d-y-axis)
@@ -304,4 +371,3 @@
 (create-step #(do
   (insert-geom geom-z1-disc)
 ))
-
