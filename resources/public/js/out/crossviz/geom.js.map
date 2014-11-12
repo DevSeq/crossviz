@@ -1,6 +1,6 @@
 {"version":3,
  "file":
- "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/geom.js",
+ "/home/mbp/public_html/crossviz/resources/public/js/out/crossviz/geom.js",
  "sources":["geom.cljs"],
  "lineCount":187,
  "mappings":
@@ -11,9 +11,9 @@
   "crossviz.geom/zdisc", "r", "z", "zdisc", "crossviz.geom/line", "p",
   "line", "crossviz.geom/point", "point", "crossviz.geom/plane",
   "plane", "crossviz.geom/vector", "vector", "crossviz.geom/conehead",
-  "h", "conehead", "method-table__4339__auto__", "cljs.core/atom",
-  "prefer-table__4340__auto__", "method-cache__4341__auto__",
-  "cached-hierarchy__4342__auto__", "hierarchy__4343__auto__",
+  "h", "conehead", "method-table__4367__auto__", "cljs.core/atom",
+  "prefer-table__4368__auto__", "method-cache__4369__auto__",
+  "cached-hierarchy__4370__auto__", "hierarchy__4371__auto__",
   "cljs.core/get", "cljs.core/get-global-hierarchy",
   "cljs.core/MultiFn", "crossviz.geom/to-obj3",
   "cljs.core/-add-method", "g", "crossviz.obj3/conehead",

@@ -1,6 +1,6 @@
 {"version":3,
  "file":
- "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/three.js",
+ "/home/mbp/public_html/crossviz/resources/public/js/out/crossviz/three.js",
  "sources":["three.cljs"],
  "lineCount":43,
  "mappings":

@@ -8,6 +8,12 @@
 (defmacro dfn [& body]
   `(fn [] ~@body))
 
+(defmacro fn-wrapper [fn-name fn-to-wrap] `(defn ~fn-name [& args#] (eval `(~~fn-to-wrap  ~@args#))))
+
+; (fn-wrapper Vector 'java.util.Vector.) ; Creates a function called Vector
+
+; (Vector '(1 2 3)) ; Returns a value of type java.util.Vector
+
 ;(defmacro wrap [name]
 ;  `(defn ~name
 ;     ([] @(new (symbol (str "js/THREE." TrackballControls))))

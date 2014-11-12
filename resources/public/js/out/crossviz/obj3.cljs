@@ -2,6 +2,7 @@
   (:require [crossviz.math :as math]
             [crossviz.rp2 :as rp2]
             [crossviz.constants :as constants])
+  (:require-macros [crossviz.macros :as mymacros])
 )
 
 (def default-props {:color       0x000000
@@ -21,10 +22,11 @@
                     })
 
 ; clojure-style wrapper for js/THREE.Vector3 constructor
-(defn vector3
-  ([] (js/THREE.Vector3.))
-  ([x y z] (js/THREE.Vector3. x y z)))
+;(defn vector3
+;  ([] (js/THREE.Vector3.))
+;  ([x y z] (js/THREE.Vector3. x y z)))
 
+(mymacros/fn-wrapper vector3 'js/THREE.Vector3.)
 
 (defn axis [v color]
   ; takes THREE.js Vector3 `v`, and a color `color`, and returns a

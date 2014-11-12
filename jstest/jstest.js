@@ -1,69 +1,101 @@
 $(document).ready(function() {
 
+    function showMatrix(name, m) {
+        console.log(name + ' =');
+        logMatrix(m);
+    }
+
+   logMatrix = function(m) {
+        console.log(sprintf("[ %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f ]\n",
+                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
+                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
+                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
+                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
+    };
+
+    function showVector3(name, v) {
+        console.log(sprintf("%s = [ %10.4f, %10.4f, %10.4f ]",
+                            name, v.x, v.y, v.z));
+    }
+    function showVector4(name, v) {
+        console.log(sprintf("%s = [ %10.4f, %10.4f, %10.4f, %10.4f ]",
+                            name, v.x, v.y, v.z, v.w));
+    }
+
     $canvas = $('#thecanvas');
 
     width = $canvas.width();
     height = $canvas.height();
 
-    var scene = new THREE.Scene();
-    //var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    var camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+    scene = new THREE.Scene();
+    //camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+//    camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+w = 10;
+h = 10;
+near = -10;
+far = 10;
+    camera = new THREE.OrthographicCamera( w / - 2, w / 2,
+                                           h / 2, h / - 2,
+                                           near, far );
 
     canvas = $canvas[0];
 
-    //var renderer = new THREE.WebGLRenderer(canvas);
-    var renderer = new THREE.WebGLRenderer({
+    //renderer = new THREE.WebGLRenderer(canvas);
+    renderer = new THREE.WebGLRenderer({
         canvas: canvas
     });
     renderer.setSize( width, height );
     //renderer.setSize( window.innerWidth, window.innerHeight );
     //document.body.appendChild( renderer.domElement );
 
+/*
     console.log(canvas);
     console.log(canvas.width);
     console.log(canvas.height);
+*/
+    cubeSize = 0.5;
 
-    var cubeSize = 0.5;
-
-    var boxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
-    var faces = new THREE.Mesh( boxGeometry,
+    boxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
+    faces = new THREE.Mesh( boxGeometry,
                                 new THREE.MeshBasicMaterial( { color: 0x999999 } )
                               );
-    var edges = new THREE.Mesh( boxGeometry,
+    edges = new THREE.Mesh( boxGeometry,
                                 new THREE.MeshBasicMaterial( { color: 0x000000,
                                                                wireframe: true,
                                                                wireframeLinewidth: 2 } ));
 
-    function segment(x0, y0, z0, x1, y1, z1, color) {
-        var segGeometry = new THREE.Geometry();
+   segment = function(x0, y0, z0, x1, y1, z1, color) {
+        segGeometry = new THREE.Geometry();
         segGeometry.vertices.push(new THREE.Vector3(x0, y0, z0));
         segGeometry.vertices.push(new THREE.Vector3(x1, y1, z1));
         return new THREE.Line(segGeometry,
                               new THREE.LineBasicMaterial( { color: color, linewidth: 3 } ));
     }
 
-    var cube = new THREE.Object3D();
+    cube = new THREE.Object3D();
     cube.add(faces);
     cube.add(edges);
 
-    var xaxis = segment(0, 0, 0, 3, 0, 0, 0xff0000);
-    var yaxis = segment(0, 0, 0, 0, 3, 0, 0x00ff00);
-    var zaxis = segment(0, 0, 0, 0, 0, 3, 0x0000ff);
+    xaxis = segment(0, 0, 0, 3, 0, 0, 0xff0000);
+    yaxis = segment(0, 0, 0, 0, 3, 0, 0x00ff00);
+    zaxis = segment(0, 0, 0, 0, 0, 3, 0x0000ff);
 
-    var axes = new THREE.Object3D();
+    axes = new THREE.Object3D();
     axes.add(xaxis);
     axes.add(yaxis);
     axes.add(zaxis);
 
-    var world = new THREE.Object3D();
+    world = new THREE.Object3D();
     world.matrixAutoUpdate = false;
     world.add(cube);
     world.add(axes);
 
     scene.add( world );
 
-    camera.position.z = 5;
-
+    
 
     /*
 	 this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
@@ -81,7 +113,7 @@ $(document).ready(function() {
 	 window.addEventListener( 'keyup', keyup, false );
      */
 
-    function EventTracker(domElement, handler) {
+   EventTracker = function(domElement, handler) {
 
         var mouseIsDown = false;
         var lastP;
@@ -90,12 +122,12 @@ $(document).ready(function() {
             handler = {};
         }
 
-        function relCoords(event) {
+       relCoords = function(event) {
             return { x : event.pageX - domElement.offsetLeft,
                      y : event.pageY - domElement.offsetTop };
-        }
+        };
 
-        function mouseDown(event) {
+       mouseDown = function(event) {
             mouseIsDown = true;
             lastP = relCoords(event);
             if (handler.mouseDown) {
@@ -103,9 +135,9 @@ $(document).ready(function() {
             }
             window.addEventListener('mousemove', mouseMove);
             window.addEventListener('mouseup', mouseUp);
-        }
+        };
 
-        function mouseMove(event) {
+       mouseMove = function(event) {
             var p = relCoords(event);
             if (mouseIsDown) {
                 if (handler.mouseDrag) {
@@ -113,8 +145,8 @@ $(document).ready(function() {
                 }
                 lastP = p;
             }
-        }
-        function mouseUp(event) {
+        };
+       mouseUp = function(event) {
             mouseIsDown = false;
             lastP = relCoords(event);
             if (handler.mouseUp) {
@@ -122,53 +154,65 @@ $(document).ready(function() {
             }
             window.removeEventListener('mousemove', mouseMove);
             window.removeEventListener('mouseup', mouseUp);
-        }
+        };
 
         domElement.addEventListener('mousedown', mouseDown);
     }
 
+    /*
+     * Geomview-style transformation computation:
+     * 
+     * Takes 3 THREE.js objects: moving, center, and frame, and a 4x4 matrix L.
+     * L is the matrix of a spatial transformation, expressed in the coordinate
+     * system of the `frame` object translated so as to move its origin to the
+     * origin of the `center` system.
+     * 
+     * Returns the 4x4 matrix representing the same transformation L, but expressed
+     * in the coordinate system of the `moving` object.
+     */
+    var Q = new THREE.Matrix4();
+    var QInv = new THREE.Matrix4();
+    var V = new THREE.Matrix4();    
+    var TfInv = new THREE.Matrix4();    
 
-    function computeTransform(moving, center, frame, V) {
+    computeTransform = function(moving, center, frame, L) {
+
         var Tm = moving.matrix;
-        var TmInv = (new THREE.Matrix4()).getInverse(Tm);
         var Tf = frame.matrix;
-        var TfInv = (new THREE.Matrix4()).getInverse(Tf);
         var Tc = center.matrix;
-        var Pf = new THREE.Matrix4();
-        Pf.set(1.0,             0.0,             0.0,             0.0,
-               0.0,             1.0,             0.0,             0.0,
-               0.0,             0.0,             1.0,             0.0,
-               Tc.elements[12], Tc.elements[13], Tc.elements[14], Tc.elements[15]);
-        var PfInv = (new THREE.Matrix4()).getInverse(Pf);
-
-/*
-        var M = Tm.clone();
-        M.multiply(TfInv);
-        M.multiply(PfInv);
-        M.multiply(V);
-        M.multiply(Pf);
-        M.multiply(Tf);
-        M.multiply(TmInv);
-*/
-        var M = TmInv.clone();
-        M.multiply(Tf);
-        M.multiply(Pf);
-        M.multiply(V);
-        M.multiply(PfInv);
-        M.multiply(TfInv);
-        M.multiply(Tm);
-        return M;
-    }
+        TfInv.getInverse(Tf);
+        
+        var ce = Tc.elements;
+        var fe = Tf.elements;
+        
+        Q.set(1, 0, 0, fe[12] - ce[12],
+              0, 1, 0, fe[13] - ce[13],
+              0, 0, 1, fe[14] - ce[14],
+              0, 0, 0, 1);
+        
+        Q.multiply(TfInv);
+        Q.multiply(Tm);
+        
+        QInv.getInverse(Q);
+        
+        V.copy(QInv);
+        V.multiply(L);
+        V.multiply(Q);
+        
+        return V;
+    };
 
 
 
     EventTracker(canvas, {
         mouseDown: function(p) {
-            //console.log('down: [' + p.x + ',' + p.y + ']');
         },
         mouseDrag: function(p, dp) {
-            //console.log('drag: [' + p.x + ',' + p.y + '] / d[' + dp.x + ',' + dp.y + ']');
-            var v = new THREE.Vector3(-dp.y, dp.x, 0).normalize();
+            // Note: the axis of rotation for a mouse displacement of (dp.x,dp.y) would
+            // normally be (-dp.y, dp.x, 0), but since the y direction of screen coords
+            // is reversed (increasing towards the bottom of the screen), we need to negate
+            // the y coord here; therefore we use (dp.y, dp.x, 0):
+            var v = new THREE.Vector3(dp.y, dp.x, 0).normalize();
             var d = 10000 * Math.sqrt(dp.x*dp.x + dp.y*dp.y);
             var angle = canvas.width * Math.PI / d;
             var R = new THREE.Matrix4().makeRotationAxis(v, angle);
@@ -178,37 +222,75 @@ $(document).ready(function() {
             rerender();
         },
         mouseUp: function(p) {
-            //console.log('up: [' + p.x + ',' + p.y + ']');
         }
     });
 
 
-
-    function logMatrix(m) {
-        console.log(sprintf("[ %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f ]\n",
-                            m.elements[0],m.elements[1],m.elements[2],m.elements[3],
-                            m.elements[4],m.elements[5],m.elements[6],m.elements[7],
-                            m.elements[8],m.elements[9],m.elements[10],m.elements[11],
-                            m.elements[12],m.elements[13],m.elements[14],m.elements[15]));
-    }
-
-
-    function render() {
-//      requestAnimationFrame( render );
-//        world.matrix.multiply(R);
-//        logMatrix(world.matrix);
-//console.log(world.matrix.elements[0]);
-//        console.log(world.matrixAutoUpdate);
+   render = function() {
         renderer.render( scene, camera );
+    };
+
+    makeRenderFunc = function(func) {
+        return function() {
+            renderer.render( scene, camera );
+            if (typeof(func) === "function") {
+                func();
+            }
+        };
+    };
+
+    rerender = function(func) {
+        requestAnimationFrame( makeRenderFunc(func) );
+    };
+
+/*
+    Tm = (new THREE.Matrix4()).makeRotationAxis(new THREE.Vector3(0,0,1), Math.PI/4);
+    world.matrix.multiply(Tm);
+    world.matrixWorldNeedsUpdate = true;
+*/
+
+    camera.matrixAutoUpdate = false;
+    camera.matrix.setPosition(new THREE.Vector3(0,0,5));
+    camera.matrixWorldNeedsUpdate = true;
+
+
+    function showScreenCoords(msg, x,y,z) {
+        var S = (world.matrixWorld.clone()
+                 .multiply((new THREE.Matrix4()).getInverse(camera.matrixWorld))
+                 .multiply(camera.projectionMatrix));
+        var v = (new THREE.Vector3(x,y,z)).applyMatrix4(S);
+        console.log(sprintf("%s [%10.4f, %10.4f, %10.4f] => [%10.4f, %10.4f, %10.4f]",
+                            msg, x, y, z, v.x, v.y, v.z));
     }
 
-    function rerender() {
-        requestAnimationFrame( render );
-    }
-    rerender();
+
+    rerender(function() {
+
+/*
+        V = computeTransform(world, world, camera,
+                             (new THREE.Matrix4()).makeRotationAxis(new THREE.Vector3(0,1,0), Math.PI/4));
+        world.matrix.multiplyMatrices(world.matrix, V);
+        world.matrixWorldNeedsUpdate = true;        
+        rerender();
+*/
+
+    });
     //render();
+
+/*
+Rx = new THREE.Matrix4();
+Rx.makeRotationAxis(new THREE.Vector3(1,0,0), Math.PI/4);
+Ry = new THREE.Matrix4();
+Ry.makeRotationAxis(new THREE.Vector3(0,1,0), Math.PI/4);
+RxRy = new THREE.Matrix4();
+RxRy.copy(Rx);
+RxRy.multiply(Ry);
+console.log('Rx =');
+logMatrix(Rx);
+console.log('Ry =');
+logMatrix(Ry);
+console.log('RxRy =');
+logMatrix(RxRy);
+*/
 
 });
