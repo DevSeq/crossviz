@@ -32,14 +32,14 @@ $(document).ready(function() {
 
     scene = new THREE.Scene();
     //camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-//    camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
-w = 10;
-h = 10;
-near = -10;
-far = 10;
-    camera = new THREE.OrthographicCamera( w / - 2, w / 2,
-                                           h / 2, h / - 2,
-                                           near, far );
+    camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+//w = 10;
+//h = 10;
+//near = -10;
+//far = 10;
+//    camera = new THREE.OrthographicCamera( w / - 2, w / 2,
+//                                           h / 2, h / - 2,
+//                                           near, far );
 
     canvas = $canvas[0];
 
@@ -213,8 +213,8 @@ far = 10;
             // is reversed (increasing towards the bottom of the screen), we need to negate
             // the y coord here; therefore we use (dp.y, dp.x, 0):
             var v = new THREE.Vector3(dp.y, dp.x, 0).normalize();
-            var d = 10000 * Math.sqrt(dp.x*dp.x + dp.y*dp.y);
-            var angle = canvas.width * Math.PI / d;
+            var d = Math.sqrt(dp.x*dp.x + dp.y*dp.y);
+            var angle = (d / canvas.width) * Math.PI;
             var R = new THREE.Matrix4().makeRotationAxis(v, angle);
             var M = computeTransform(world,world,camera, R);
             world.matrix.multiply(M);
