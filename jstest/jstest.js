@@ -155,9 +155,22 @@ $(document).ready(function() {
             window.removeEventListener('mousemove', mouseMove);
             window.removeEventListener('mouseup', mouseUp);
         };
-
-        domElement.addEventListener('mousedown', mouseDown);
-    }
+       mouseWheel = function(event) {
+           if (handler.mouseWheel) {
+		       event.preventDefault();
+		       event.stopPropagation();
+		       var delta = 0;
+		       if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+			       delta = event.wheelDelta / 40;
+		       } else if ( event.detail ) { // Firefox
+			       delta = - event.detail / 3;
+		       }
+               handler.mouseWheel(delta);
+           }
+       };
+       domElement.addEventListener('mousedown', mouseDown);
+	   domElement.addEventListener( 'mousewheel', mouseWheel, false );
+    };
 
     /*
      * Geomview-style transformation computation:
@@ -222,6 +235,14 @@ $(document).ready(function() {
             rerender();
         },
         mouseUp: function(p) {
+        },
+        mouseWheel: function(delta) {
+            var s = Math.exp(delta/20.0);
+            var R = new THREE.Matrix4().makeScale(s,s,s);
+            var M = computeTransform(world,world,camera, R);
+            world.matrix.multiply(M);
+            world.matrixWorldNeedsUpdate = true;
+            rerender();
         }
     });
 
