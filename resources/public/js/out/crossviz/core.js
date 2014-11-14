@@ -17,16 +17,13 @@ goog.require('crossviz.geom');
 cljs.core.enable_console_print_BANG_.call(null);
 crossviz.core.log = (function log(msg){return console.log(msg);
 });
-crossviz.core.noop_action = (function noop_action(){return (function (){return null;
-});
-});
 crossviz.core.scene_root = crossviz.three.Scene.call(null);
 crossviz.core.geoms = cljs.core.atom.call(null,cljs.core.PersistentVector.EMPTY);
 crossviz.core.insert_geom = (function insert_geom(g){cljs.core.swap_BANG_.call(null,crossviz.core.geoms,(function (gs){return cljs.core.conj.call(null,gs,g);
 }));
 return crossviz.core.refresh.call(null);
 });
-crossviz.core.remove_geom = (function remove_geom(g){cljs.core.swap_BANG_.call(null,crossviz.core.geoms,(function (gs){return cljs.core.filter.call(null,(function (p1__4932_SHARP_){return cljs.core.not_EQ_.call(null,p1__4932_SHARP_,g);
+crossviz.core.remove_geom = (function remove_geom(g){cljs.core.swap_BANG_.call(null,crossviz.core.geoms,(function (gs){return cljs.core.filter.call(null,(function (p1__5247_SHARP_){return cljs.core.not_EQ_.call(null,p1__5247_SHARP_,g);
 }),gs);
 }));
 return crossviz.core.refresh.call(null);
@@ -38,59 +35,59 @@ crossviz.core.world = cljs.core.atom.call(null,crossviz.three.Object3D.call(null
 crossviz.core.add_geom_to_world = (function add_geom_to_world(g){if(cljs.core.vector_QMARK_.call(null,g))
 {cljs.core.doall.call(null,cljs.core.map.call(null,add_geom_to_world,g));
 } else
-{var obj_4933 = crossviz.geom.to_obj3.call(null,g);if(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1017479852).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"text","text",1017460895)))
-{cljs.core.swap_BANG_.call(null,crossviz.core.texts,((function (obj_4933){
-return (function (ts){return cljs.core.conj.call(null,ts,obj_4933);
-});})(obj_4933))
+{var obj_5248 = crossviz.geom.to_obj3.call(null,g);if(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1017479852).cljs$core$IFn$_invoke$arity$1(g),new cljs.core.Keyword(null,"text","text",1017460895)))
+{cljs.core.swap_BANG_.call(null,crossviz.core.texts,((function (obj_5248){
+return (function (ts){return cljs.core.conj.call(null,ts,obj_5248);
+});})(obj_5248))
 );
 } else
 {}
-cljs.core.deref.call(null,crossviz.core.world).add(obj_4933);
+cljs.core.deref.call(null,crossviz.core.world).add(obj_5248);
 }
 return null;
 });
 cljs.core.add_watch.call(null,crossviz.core.geoms,new cljs.core.Keyword(null,"geoms-watch","geoms-watch",552219563),(function (_,___$1,___$2,new_geoms){crossviz.core.WORLD.remove(cljs.core.deref.call(null,crossviz.core.world));
 cljs.core.reset_BANG_.call(null,crossviz.core.world,(new THREE.Object3D()));
 cljs.core.reset_BANG_.call(null,crossviz.core.texts,cljs.core.PersistentVector.EMPTY);
-var seq__4934_4938 = cljs.core.seq.call(null,new_geoms);var chunk__4935_4939 = null;var count__4936_4940 = 0;var i__4937_4941 = 0;while(true){
-if((i__4937_4941 < count__4936_4940))
-{var g_4942 = cljs.core._nth.call(null,chunk__4935_4939,i__4937_4941);crossviz.core.add_geom_to_world.call(null,g_4942);
+var seq__5249_5253 = cljs.core.seq.call(null,new_geoms);var chunk__5250_5254 = null;var count__5251_5255 = 0;var i__5252_5256 = 0;while(true){
+if((i__5252_5256 < count__5251_5255))
+{var g_5257 = cljs.core._nth.call(null,chunk__5250_5254,i__5252_5256);crossviz.core.add_geom_to_world.call(null,g_5257);
 {
-var G__4943 = seq__4934_4938;
-var G__4944 = chunk__4935_4939;
-var G__4945 = count__4936_4940;
-var G__4946 = (i__4937_4941 + 1);
-seq__4934_4938 = G__4943;
-chunk__4935_4939 = G__4944;
-count__4936_4940 = G__4945;
-i__4937_4941 = G__4946;
+var G__5258 = seq__5249_5253;
+var G__5259 = chunk__5250_5254;
+var G__5260 = count__5251_5255;
+var G__5261 = (i__5252_5256 + 1);
+seq__5249_5253 = G__5258;
+chunk__5250_5254 = G__5259;
+count__5251_5255 = G__5260;
+i__5252_5256 = G__5261;
 continue;
 }
 } else
-{var temp__4126__auto___4947 = cljs.core.seq.call(null,seq__4934_4938);if(temp__4126__auto___4947)
-{var seq__4934_4948__$1 = temp__4126__auto___4947;if(cljs.core.chunked_seq_QMARK_.call(null,seq__4934_4948__$1))
-{var c__4229__auto___4949 = cljs.core.chunk_first.call(null,seq__4934_4948__$1);{
-var G__4950 = cljs.core.chunk_rest.call(null,seq__4934_4948__$1);
-var G__4951 = c__4229__auto___4949;
-var G__4952 = cljs.core.count.call(null,c__4229__auto___4949);
-var G__4953 = 0;
-seq__4934_4938 = G__4950;
-chunk__4935_4939 = G__4951;
-count__4936_4940 = G__4952;
-i__4937_4941 = G__4953;
+{var temp__4126__auto___5262 = cljs.core.seq.call(null,seq__5249_5253);if(temp__4126__auto___5262)
+{var seq__5249_5263__$1 = temp__4126__auto___5262;if(cljs.core.chunked_seq_QMARK_.call(null,seq__5249_5263__$1))
+{var c__4229__auto___5264 = cljs.core.chunk_first.call(null,seq__5249_5263__$1);{
+var G__5265 = cljs.core.chunk_rest.call(null,seq__5249_5263__$1);
+var G__5266 = c__4229__auto___5264;
+var G__5267 = cljs.core.count.call(null,c__4229__auto___5264);
+var G__5268 = 0;
+seq__5249_5253 = G__5265;
+chunk__5250_5254 = G__5266;
+count__5251_5255 = G__5267;
+i__5252_5256 = G__5268;
 continue;
 }
 } else
-{var g_4954 = cljs.core.first.call(null,seq__4934_4948__$1);crossviz.core.add_geom_to_world.call(null,g_4954);
+{var g_5269 = cljs.core.first.call(null,seq__5249_5263__$1);crossviz.core.add_geom_to_world.call(null,g_5269);
 {
-var G__4955 = cljs.core.next.call(null,seq__4934_4948__$1);
-var G__4956 = null;
-var G__4957 = 0;
-var G__4958 = 0;
-seq__4934_4938 = G__4955;
-chunk__4935_4939 = G__4956;
-count__4936_4940 = G__4957;
-i__4937_4941 = G__4958;
+var G__5270 = cljs.core.next.call(null,seq__5249_5263__$1);
+var G__5271 = null;
+var G__5272 = 0;
+var G__5273 = 0;
+seq__5249_5253 = G__5270;
+chunk__5250_5254 = G__5271;
+count__5251_5255 = G__5272;
+i__5252_5256 = G__5273;
 continue;
 }
 }
@@ -158,10 +155,10 @@ return container;
 crossviz.core.actions = cljs.core.atom.call(null,cljs.core.List.EMPTY);
 crossviz.core.take_actions = (function take_actions(){var action_taken = cljs.core.seq.call(null,cljs.core.deref.call(null,crossviz.core.actions));cljs.core.swap_BANG_.call(null,crossviz.core.actions,((function (action_taken){
 return (function (actions){return cljs.core.doall.call(null,cljs.core.filter.call(null,((function (action_taken){
-return (function (p1__4959_SHARP_){return !((p1__4959_SHARP_ == null));
+return (function (p1__5274_SHARP_){return !((p1__5274_SHARP_ == null));
 });})(action_taken))
 ,cljs.core.map.call(null,((function (action_taken){
-return (function (p1__4960_SHARP_){return p1__4960_SHARP_.call(null);
+return (function (p1__5275_SHARP_){return p1__5275_SHARP_.call(null);
 });})(action_taken))
 ,actions)));
 });})(action_taken))
@@ -181,8 +178,8 @@ var new_actions = null;if (arguments.length > 0) {
   new_actions = cljs.core.array_seq(Array.prototype.slice.call(arguments, 0),0);} 
 return add_actions__delegate.call(this,new_actions);};
 add_actions.cljs$lang$maxFixedArity = 0;
-add_actions.cljs$lang$applyTo = (function (arglist__4961){
-var new_actions = cljs.core.seq(arglist__4961);
+add_actions.cljs$lang$applyTo = (function (arglist__5276){
+var new_actions = cljs.core.seq(arglist__5276);
 return add_actions__delegate(new_actions);
 });
 add_actions.cljs$core$IFn$_invoke$arity$variadic = add_actions__delegate;
@@ -205,21 +202,14 @@ crossviz.core.light3 = (new THREE.DirectionalLight(16777215,0.7));
 crossviz.core.eventTracker = EventTracker(crossviz.core.renderer.domElement,{"mouseWheel": (function (delta){var s = Math.exp((delta / 20.0));var R = (new THREE.Matrix4()).makeScale(s,s,s);var M = crossviz.core.eventTracker.computeTransform(crossviz.core.WORLD,crossviz.core.WORLD,crossviz.core.camera,R);return crossviz.core.add_actions.call(null,crossviz.core.oneshot_transform_action.call(null,crossviz.core.WORLD,M));
 }), "mouseDrag": (function (p,dp){var v = (new THREE.Vector3(dp.y,dp.x,0)).normalize();var d = Math.sqrt(((dp.x * dp.x) + (dp.y * dp.y)));var angle = ((d / crossviz.core.width) * Math.PI);var R = (new THREE.Matrix4()).makeRotationAxis(v,angle);var M = crossviz.core.eventTracker.computeTransform(crossviz.core.WORLD,crossviz.core.WORLD,crossviz.core.camera,R);return crossviz.core.add_actions.call(null,crossviz.core.oneshot_transform_action.call(null,crossviz.core.WORLD,M));
 })});
-crossviz.core.run = (function run(){if(crossviz.core.take_actions.call(null))
-{var M_4963 = (new THREE.Matrix4()).getInverse(crossviz.core.WORLD.matrix).multiply(crossviz.core.camera.matrix.clone());cljs.core.dorun.call(null,cljs.core.map.call(null,((function (M_4963){
-return (function (p1__4962_SHARP_){return p1__4962_SHARP_.rotation.setFromRotationMatrix(M_4963);
-});})(M_4963))
+crossviz.core.realign_labels_camera_facing = (function realign_labels_camera_facing(){crossviz.core.WORLD.updateMatrixWorld();
+crossviz.core.camera.updateMatrixWorld();
+var M = (new THREE.Matrix4()).getInverse(crossviz.core.WORLD.matrixWorld).multiply(crossviz.core.camera.matrixWorld);return cljs.core.dorun.call(null,cljs.core.map.call(null,((function (M){
+return (function (p1__5277_SHARP_){return p1__5277_SHARP_.rotation.setFromRotationMatrix(M);
+});})(M))
 ,cljs.core.deref.call(null,crossviz.core.texts)));
-crossviz.core.renderer.render(crossviz.core.scene_root,crossviz.core.camera);
-return requestAnimationFrame(run);
-} else
-{return null;
-}
 });
-crossviz.core.refresh = (function refresh(){return requestAnimationFrame((function (){var M_4965 = (new THREE.Matrix4()).getInverse(crossviz.core.WORLD.matrix).multiply(crossviz.core.camera.matrix.clone());cljs.core.dorun.call(null,cljs.core.map.call(null,((function (M_4965){
-return (function (p1__4964_SHARP_){return p1__4964_SHARP_.rotation.setFromRotationMatrix(M_4965);
-});})(M_4965))
-,cljs.core.deref.call(null,crossviz.core.texts)));
+crossviz.core.refresh = (function refresh(){return requestAnimationFrame((function (){crossviz.core.realign_labels_camera_facing.call(null);
 crossviz.core.renderer.render(crossviz.core.scene_root,crossviz.core.camera);
 if(crossviz.core.take_actions.call(null))
 {return refresh.call(null);

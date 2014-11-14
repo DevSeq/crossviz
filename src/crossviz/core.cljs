@@ -11,18 +11,10 @@
 (enable-console-print!)
 
 (def add-actions)
-(def run)
 (def refresh)
 (def  eventTracker)
 
-
-
-
 (defn log [msg] (.log js/console msg))
-
-(defn noop-action []
-  (fn [] nil)
-)
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
@@ -35,7 +27,6 @@
 ; insert a geom into the master list
 (defn insert-geom [g]
   (swap! geoms (fn [gs] (conj gs g)))
-  ;(add-actions (noop-action))
   (refresh)
 )
 
@@ -43,7 +34,6 @@
 (defn remove-geom [g]
   (swap! geoms
          (fn [gs] (filter #(not= % g) gs)))
-  ;(add-actions (noop-action))
   (refresh)
 )
 
@@ -220,49 +210,22 @@
                                       (add-actions (oneshot-transform-action WORLD M))))
       }))
 
-;         function(p, dp) {
-;            // Note: the axis of rotation for a mouse displacement of (dp.x,dp.y) would
-;            // normally be (-dp.y, dp.x, 0), but since the y direction of screen coords
-;            // is reversed (increasing towards the bottom of the screen), we need to negate
-;            // the y coord here; therefore we use (dp.y, dp.x, 0):
-;            var v = new THREE.Vector3(dp.y, dp.x, 0).normalize();
-;            var d = Math.sqrt(dp.x*dp.x + dp.y*dp.y);
-;            var angle = (d / canvas.width) * Math.PI;
-;            var R = new THREE.Matrix4().makeRotationAxis(v, angle);
-;            var M = eventTracker.computeTransform(world,world,camera, R);
-;            world.matrix.multiply(M);
-;            world.matrixWorldNeedsUpdate = true;
-;            rerender();
-;        },
-
-;;;controls (def  controls  (createCameraControls camera (.-domElement renderer)))
-(def  run       (fn run []
-;;;controls                   ; update the controls:
-;;;controls                   (if @trackballing (.update controls))
-                  (if (take-actions)
-                    (do
-                      ; re-orient any text objects to be camera-facing:
-                      ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
-                      (let [M (->
-                               (js/THREE.Matrix4.)
-                               (.getInverse (.-matrix WORLD))
-                               (.multiply (.clone (.-matrix camera))))]
-                        (dorun (map #(.setFromRotationMatrix  (.-rotation %) M) @texts)))
-                      ; render the scene
-                      (.render renderer scene-root camera)
-                      ; if animating, move time forward for next frame
-                      ;(if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
-                      ; request next frame:
-                      (js/requestAnimationFrame run)))))
+(defn realign-labels-camera-facing []
+  "Set the orientation of all labels (in the @texts list) to be camera-facing"
+  (.updateMatrixWorld WORLD)
+  (.updateMatrixWorld camera)
+  (let [M (->
+           (js/THREE.Matrix4.) ; create a new matrix
+           (.getInverse (.-matrixWorld WORLD)) ; load it with the inverse of WORLD's matrixWorld matrix
+           (.multiply (.-matrixWorld camera)))] ; multiply it by the camera's matrixWorld matrix
+    ; So now M = (inverse of WORLD's matrixWorld) * (camera's matrixWorld)
+    ; Apply the rotational component of M to all text objects
+    (dorun (map #(.setFromRotationMatrix  (.-rotation %) M) @texts))))
 
 (defn refresh []
   (js/requestAnimationFrame
    (fn []
-     (let [M (->
-              (js/THREE.Matrix4.)
-              (.getInverse (.-matrix WORLD))
-              (.multiply (.clone (.-matrix camera))))]
-       (dorun (map #(.setFromRotationMatrix  (.-rotation %) M) @texts)))
+     (realign-labels-camera-facing)
      (.render renderer scene-root camera)
      (if (take-actions) (refresh)))))
 
@@ -280,55 +243,13 @@
   (.add scene-root camera)
   (.add scene-root WORLD)
   (.add WORLD @world)
-  ;(add-actions (noop-action))
   (refresh)
-
 
 
 (def v1 (geom/vector (rp2/rp2 1 1 3) { :color 0xFFFF00 }))
 (insert-geom v1)
 
 (remove-geom v1)
-
-
-;;; (let [
-;;;       renderer  (js/THREE.WebGLRenderer. #js{:antialias true})
-;;;       container (prepareContainer (.getElementById js/document "container") renderer)
-;;;       width     (.-offsetWidth container)
-;;;       height    (.-offsetHeight container)
-;;;       camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 )
-;;;       light1    (js/THREE.DirectionalLight.  0xffffff  0.5)
-;;;       light2    (js/THREE.DirectionalLight.  0xffffff  0.6)
-;;;       light3    (js/THREE.DirectionalLight.  0xffffff  0.7)
-;;;       controls  (createCameraControls camera (.-domElement renderer))
-;;;       run       (fn run []
-;;;                   ; update the controls:
-;;;                   (.update controls)
-;;;                   ; re-orient any text objects to be camera-facing:
-;;;                   ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
-;;;                   (dorun (map #(.setFromRotationMatrix  (.-rotation %) (.-matrix camera)) @texts))
-;;;                   ; render the scene
-;;;                   (.render renderer scene-root camera)
-;;;                   ; if animating, move time forward for next frame
-;;;                   (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
-;;;                   ; request next frame:
-;;;                   (js/requestAnimationFrame run))
-;;;       ]
-;;;   (.setSize renderer width height)
-;;;   (.setClearColor renderer 0x444455 1)
-;;;   (.set (.-position camera) 1  -5  3)
-;;;   (.set (.-up camera) 0 0 1)
-;;;   (.lookAt camera (vector3 0 0 0))
-;;;   (.set (.-position light1) 100 0 0)
-;;;   (.set (.-position light2) 0 -100 0)
-;;;   (.set (.-position light3) 0  100 0)
-;;;   (.add camera light1)
-;;;   (.add camera light2)
-;;;   (.add camera light3)
-;;;   (.add scene-root camera)
-;;;   (.add scene-root @world)
-;;;   (run)
-;;; )
 
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
