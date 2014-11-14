@@ -56,6 +56,29 @@ var EventTracker = function(domElement, handler) {
     domElement.addEventListener('mousedown', mouseDown);
 	domElement.addEventListener( 'mousewheel', mouseWheel, false );
 
+    function showMatrix(name, m) {
+        console.log(sprintf("%10s = [ %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f ]\n",
+                            name,
+                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
+                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
+                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
+                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
+    }
+
+   logMatrix = function(m) {
+        console.log(sprintf("[ %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "  %10.4f  %10.4f  %10.4f  %10.4f ]\n",
+                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
+                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
+                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
+                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
+    };
+
     /*
      * Geomview-style transformation computation:
      * 
@@ -71,27 +94,40 @@ var EventTracker = function(domElement, handler) {
     var QInv  = new THREE.Matrix4();
     var V     = new THREE.Matrix4();    
     var TfInv = new THREE.Matrix4();    
+    var TmInv = new THREE.Matrix4();    
+    var P     = new THREE.Matrix4();    
+    var PInv  = new THREE.Matrix4();    
     var computeTransform = function(moving, center, frame, L) {
 
-        var Tm = moving.matrix;
-        var Tf = frame.matrix;
-        var Tc = center.matrix;
+        var Tm = moving.matrixWorld;
+        var Tf = frame.matrixWorld;
+        var Tc = center.matrixWorld;
         TfInv.getInverse(Tf);
+        TmInv.getInverse(Tm);
+
+        //showMatrix('Tm', Tm);
+        //showMatrix('Tc', Tc);
+        //showMatrix('Tf', Tf);
         
         var ce = Tc.elements;
         var fe = Tf.elements;
         
-        Q.set(1, 0, 0, fe[12] - ce[12],
+        P.set(1, 0, 0, fe[12] - ce[12],
               0, 1, 0, fe[13] - ce[13],
               0, 0, 1, fe[14] - ce[14],
               0, 0, 0, 1);
-        
+
+        //showMatrix('P', P);
+
+        Q.identity();
         Q.multiply(TfInv);
+        Q.multiply(P);
         Q.multiply(Tm);
-        
+
         QInv.getInverse(Q);
         
-        V.copy(QInv);
+        V.identity();
+        V.multiply(QInv);
         V.multiply(L);
         V.multiply(Q);
         

@@ -32,7 +32,6 @@ $(document).ready(function() {
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
 //w = 10;
 //h = 10;
 //near = -10;
@@ -48,44 +47,67 @@ $(document).ready(function() {
     });
     renderer.setSize( width, height );
 
-    cubeSize = 0.5;
+    function makeThingy(axisLength, cubeSize, xColor, yColor, zColor, cubeColor) {
+        var boxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
+        var faces = new THREE.Mesh( boxGeometry,
+                                    new THREE.MeshBasicMaterial( { color: cubeColor } )
+                                  );
+        var edges = new THREE.Mesh( boxGeometry,
+                                    new THREE.MeshBasicMaterial( { color: 0x000000,
+                                                                   wireframe: true,
+                                                                   wireframeLinewidth: 2 } ));
+        var makeSegment = function(x0, y0, z0, x1, y1, z1, color) {
+            var segGeometry = new THREE.Geometry();
+            segGeometry.vertices.push(new THREE.Vector3(x0, y0, z0));
+            segGeometry.vertices.push(new THREE.Vector3(x1, y1, z1));
+            return new THREE.Line(segGeometry,
+                                  new THREE.LineBasicMaterial( { color: color, linewidth: 3 } ));
+        };
 
-    boxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
-    faces = new THREE.Mesh( boxGeometry,
-                                new THREE.MeshBasicMaterial( { color: 0x999999 } )
-                              );
-    edges = new THREE.Mesh( boxGeometry,
-                                new THREE.MeshBasicMaterial( { color: 0x000000,
-                                                               wireframe: true,
-                                                               wireframeLinewidth: 2 } ));
+        var cube = new THREE.Object3D();
+        cube.add(faces);
+        cube.add(edges);
 
-   segment = function(x0, y0, z0, x1, y1, z1, color) {
-        segGeometry = new THREE.Geometry();
-        segGeometry.vertices.push(new THREE.Vector3(x0, y0, z0));
-        segGeometry.vertices.push(new THREE.Vector3(x1, y1, z1));
-        return new THREE.Line(segGeometry,
-                              new THREE.LineBasicMaterial( { color: color, linewidth: 3 } ));
-    };
+        var xaxis = makeSegment(0, 0, 0, axisLength, 0, 0, xColor);
+        var yaxis = makeSegment(0, 0, 0, 0, axisLength, 0, yColor);
+        var zaxis = makeSegment(0, 0, 0, 0, 0, axisLength, zColor);
 
-    cube = new THREE.Object3D();
-    cube.add(faces);
-    cube.add(edges);
+        var axes = new THREE.Object3D();
+        axes.add(xaxis);
+        axes.add(yaxis);
+        axes.add(zaxis);
 
-    xaxis = segment(0, 0, 0, 3, 0, 0, 0xff0000);
-    yaxis = segment(0, 0, 0, 0, 3, 0, 0x00ff00);
-    zaxis = segment(0, 0, 0, 0, 0, 3, 0x0000ff);
+        var thingy = new THREE.Object3D();
+        thingy.matrixAutoUpdate = false;
+        thingy.add(cube);
+        thingy.add(axes);
+        return thingy;
+    }
 
-    axes = new THREE.Object3D();
-    axes.add(xaxis);
-    axes.add(yaxis);
-    axes.add(zaxis);
+    camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+    camera.matrixAutoUpdate = false;
 
-    world = new THREE.Object3D();
+    camera.position = new THREE.Vector3(1,-5,3);
+    camera.up = new THREE.Vector3(0,1,0);
+    camera.lookAt(new THREE.Vector3(0,0,0));
+
+    camera.updateMatrix();
+    camera.matrixWorldNeedsUpdate = true;
+
+    var world = new THREE.Object3D();
     world.matrixAutoUpdate = false;
-    world.add(cube);
-    world.add(axes);
-
+    var t1 = makeThingy(3, 0.5,  0xff0000, 0x00ff00, 0x0000ff, 0x999900);
+    var t2 = makeThingy(1, 0.35, 0xff0000, 0x00ff00, 0x0000ff, 0x009999);
+    t2.matrix.setPosition(new THREE.Vector3(-1,1,-1));
+    t2.matrixWorldNeedsUpdate = true;
+    world.add(t1);
+    world.add(t2);
     scene.add( world );
+    scene.add( camera );
+
+    var moving = camera;
+    var center = world;
+    var frame  = world;
 
     var eventTracker = EventTracker(canvas, {
         mouseDown: function(p) {
@@ -99,9 +121,9 @@ $(document).ready(function() {
             var d = Math.sqrt(dp.x*dp.x + dp.y*dp.y);
             var angle = (d / canvas.width) * Math.PI;
             var R = new THREE.Matrix4().makeRotationAxis(v, angle);
-            var M = eventTracker.computeTransform(world,world,camera, R);
-            world.matrix.multiply(M);
-            world.matrixWorldNeedsUpdate = true;
+            var M = eventTracker.computeTransform(moving,center,frame, R);
+            moving.matrix.multiplyMatrices(moving.matrix, M);
+            moving.matrixWorldNeedsUpdate = true;
             rerender();
         },
         mouseUp: function(p) {
@@ -109,9 +131,9 @@ $(document).ready(function() {
         mouseWheel: function(delta) {
             var s = Math.exp(delta/20.0);
             var R = new THREE.Matrix4().makeScale(s,s,s);
-            var M = eventTracker.computeTransform(world,world,camera, R);
-            world.matrix.multiply(M);
-            world.matrixWorldNeedsUpdate = true;
+            var M = eventTracker.computeTransform(moving,center,frame, R);
+            moving.matrix.multiplyMatrices(moving.matrix, M);
+            moving.matrixWorldNeedsUpdate = true;
             rerender();
         }
     });
@@ -134,9 +156,14 @@ $(document).ready(function() {
         requestAnimationFrame( makeRenderFunc(func) );
     };
 
-    camera.matrixAutoUpdate = false;
+/*
     camera.matrix.setPosition(new THREE.Vector3(0,0,5));
-    camera.matrixWorldNeedsUpdate = true;
+*/
+/*
+    camera.position = new THREE.Vector3(1,-5,3);
+    camera.up = new THREE.Vector3(0,0,1);
+    camera.lookAt(new THREE.Vector3(0,0,0));
+*/
 
     function showScreenCoords(msg, x,y,z) {
         var S = (world.matrixWorld.clone()

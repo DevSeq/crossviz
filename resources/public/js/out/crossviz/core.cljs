@@ -33,6 +33,9 @@
 ; objects which need to be kept camera-facing
 (def texts (atom []))
 
+(def WORLD (three/Object3D.))
+(set! (.-matrixAutoUpdate WORLD) false)
+
 ; @world is an obj3 object that gets added to `scene-root`; it's updated with a new
 ; value (and replaced in `scene-root`) whenever the value of @geoms changes, i.e.
 ; whenever anything is inserted into or removed from @geoms.
@@ -57,33 +60,33 @@
 ; 4 args, the last of which is the new value of world-state.
 (add-watch geoms :geoms-watch
   (fn [_ _ _ new-geoms]
-    (.remove scene-root @world)
+    (.remove WORLD @world)
     (reset! world (js.THREE.Object3D.))
     (reset! texts [])
     (doseq [g new-geoms] (add-geom-to-world g))
-    (.add scene-root @world)
+    (.add WORLD @world)
    ))
 
 ; if @animating is true, the world is always spinning
 (def animating (atom false))
 
-(defn createCameraControls [camera domElement]
-  ; takes a THREE.js camera, and a dom element, and returns
-  ; a TrackballControls object
-  (let [controls (js/THREE.TrackballControls. camera domElement)
-  ;(let [controls (three/TrackballControls camera domElement)
-        radius   3]
-	(set! (.-rotateSpeed           controls)  1.0)
-	(set! (.-zoomSpeed             controls)  3.0)
-	(set! (.-panSpeed              controls)  0.2)
-	(set! (.-dynamicDampingFactor  controls)  0.3)
-	(set! (.-noZoom                controls)  false)
-	(set! (.-noPan                 controls)  false)
-	(set! (.-staticMoving          controls)  false)
-	(set! (.-minDistance           controls)  (* radius 1.0))
-	(set! (.-maxDistance           controls)  (* radius 20.0))
-    controls)
-)
+;;;controls (defn createCameraControls [camera domElement]
+;;;controls   ; takes a THREE.js camera, and a dom element, and returns
+;;;controls   ; a TrackballControls object
+;;;controls   (let [controls (js/THREE.TrackballControls. camera domElement)
+;;;controls   ;(let [controls (three/TrackballControls camera domElement)
+;;;controls         radius   3]
+;;;controls 	(set! (.-rotateSpeed           controls)  1.0)
+;;;controls 	(set! (.-zoomSpeed             controls)  3.0)
+;;;controls 	(set! (.-panSpeed              controls)  0.2)
+;;;controls 	(set! (.-dynamicDampingFactor  controls)  0.3)
+;;;controls 	(set! (.-noZoom                controls)  false)
+;;;controls 	(set! (.-noPan                 controls)  false)
+;;;controls 	(set! (.-staticMoving          controls)  false)
+;;;controls 	(set! (.-minDistance           controls)  (* radius 1.0))
+;;;controls 	(set! (.-maxDistance           controls)  (* radius 20.0))
+;;;controls     controls)
+;;;controls )
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
@@ -111,10 +114,10 @@
          (fn [actions]
            (apply conj (cons actions new-actions)))))
 
-; This atom determines whether the trackball controls are active; we have to disable
-; them in order to take control of the camera for animating camera motions.  Not sure
-; yet how to re-enable them in a way that retains the new camera position/orientation.
-(def trackballing (atom true))
+;;;controls ; This atom determines whether the trackball controls are active; we have to disable
+;;;controls ; them in order to take control of the camera for animating camera motions.  Not sure
+;;;controls ; yet how to re-enable them in a way that retains the new camera position/orientation.
+;;;controls (def trackballing (atom true))
 
 (def  renderer  (js/THREE.WebGLRenderer. #js{:antialias true}))
 (def  container (prepareContainer (.getElementById js/document "container") renderer))
@@ -124,10 +127,49 @@
 (def  light1    (js/THREE.DirectionalLight.  0xffffff  0.5))
 (def  light2    (js/THREE.DirectionalLight.  0xffffff  0.6))
 (def  light3    (js/THREE.DirectionalLight.  0xffffff  0.7))
-(def  controls  (createCameraControls camera (.-domElement renderer)))
+(def  eventTracker
+  (js/EventTracker (.-domElement renderer)
+                   #js{
+                       :mouseDrag (fn [p dp] 
+                                        ; Note: the axis of rotation for a mouse displacement of
+                                        ; (dp.x,dp.y) would normally be (-dp.y, dp.x, 0), but
+                                        ; since the y direction of screen coords is reversed
+                                        ; (increasing towards the bottom of the screen), we need
+                                        ; to negate the y coord here; therefore we use (dp.y,
+                                        ; dp.x, 0):
+                                    (let [v (.normalize (js/THREE.Vector3. (.-y dp) (.-x dp) 0))
+                                          d (js/Math.sqrt (+
+                                                           (* (.-x dp) (.-x dp))
+                                                           (* (.-y dp) (.-y dp))))
+                                          angle (* (/ d width) js/Math.PI)
+                                          R (.makeRotationAxis (js/THREE.Matrix4.) v angle)
+                                          M (.computeTransform eventTracker
+                                                               WORLD WORLD camera R)
+                                          ]
+                                      (.multiply (.-matrix WORLD) M)
+                                      (set! (.-matrixWorldNeedsUpdate WORLD) true)
+                                      ))
+      }))
+
+;         function(p, dp) {
+;            // Note: the axis of rotation for a mouse displacement of (dp.x,dp.y) would
+;            // normally be (-dp.y, dp.x, 0), but since the y direction of screen coords
+;            // is reversed (increasing towards the bottom of the screen), we need to negate
+;            // the y coord here; therefore we use (dp.y, dp.x, 0):
+;            var v = new THREE.Vector3(dp.y, dp.x, 0).normalize();
+;            var d = Math.sqrt(dp.x*dp.x + dp.y*dp.y);
+;            var angle = (d / canvas.width) * Math.PI;
+;            var R = new THREE.Matrix4().makeRotationAxis(v, angle);
+;            var M = eventTracker.computeTransform(world,world,camera, R);
+;            world.matrix.multiply(M);
+;            world.matrixWorldNeedsUpdate = true;
+;            rerender();
+;        },
+
+;;;controls (def  controls  (createCameraControls camera (.-domElement renderer)))
 (def  run       (fn run []
-                  ; update the controls:
-                  (if @trackballing (.update controls))
+;;;controls                   ; update the controls:
+;;;controls                   (if @trackballing (.update controls))
                   (take-actions)
                   ; re-orient any text objects to be camera-facing:
                   ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
@@ -142,6 +184,7 @@
   (.setSize renderer width height)
   (.setClearColor renderer 0x444455 1)
   (.set (.-position camera) 1  -5  3)
+;  (.set (.-position camera) 0 0 5)
   (.set (.-up camera) 0 0 1)
   (.lookAt camera (vector3 0 0 0))
   (.set (.-position light1) 100 0 0)
@@ -151,7 +194,8 @@
   (.add camera light2)
   (.add camera light3)
   (.add scene-root camera)
-  (.add scene-root @world)
+  (.add scene-root WORLD)
+  (.add WORLD @world)
   (run)
 
 
