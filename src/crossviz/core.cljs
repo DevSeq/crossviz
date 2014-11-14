@@ -10,7 +10,19 @@
 
 (enable-console-print!)
 
+(def add-actions)
+(def run)
+(def refresh)
+(def  eventTracker)
+
+
+
+
 (defn log [msg] (.log js/console msg))
+
+(defn noop-action []
+  (fn [] nil)
+)
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
@@ -22,12 +34,18 @@
 
 ; insert a geom into the master list
 (defn insert-geom [g]
-  (swap! geoms (fn [gs] (conj gs g))))
+  (swap! geoms (fn [gs] (conj gs g)))
+  ;(add-actions (noop-action))
+  (refresh)
+)
 
 ; remove a geom from the master list
 (defn remove-geom [g]
   (swap! geoms
-         (fn [gs] (filter #(not= % g) gs))))
+         (fn [gs] (filter #(not= % g) gs)))
+  ;(add-actions (noop-action))
+  (refresh)
+)
 
 ; @texts is a list of all the text objects in the world; this is a list of obj3
 ; objects which need to be kept camera-facing
@@ -70,23 +88,59 @@
 ; if @animating is true, the world is always spinning
 (def animating (atom false))
 
-;;;controls (defn createCameraControls [camera domElement]
-;;;controls   ; takes a THREE.js camera, and a dom element, and returns
-;;;controls   ; a TrackballControls object
-;;;controls   (let [controls (js/THREE.TrackballControls. camera domElement)
-;;;controls   ;(let [controls (three/TrackballControls camera domElement)
-;;;controls         radius   3]
-;;;controls 	(set! (.-rotateSpeed           controls)  1.0)
-;;;controls 	(set! (.-zoomSpeed             controls)  3.0)
-;;;controls 	(set! (.-panSpeed              controls)  0.2)
-;;;controls 	(set! (.-dynamicDampingFactor  controls)  0.3)
-;;;controls 	(set! (.-noZoom                controls)  false)
-;;;controls 	(set! (.-noPan                 controls)  false)
-;;;controls 	(set! (.-staticMoving          controls)  false)
-;;;controls 	(set! (.-minDistance           controls)  (* radius 1.0))
-;;;controls 	(set! (.-maxDistance           controls)  (* radius 20.0))
-;;;controls     controls)
-;;;controls )
+; single variable linear interpolation:
+(defn finterp [x0 x1 t]
+  (+ x0 (* t (- x1 x0)))
+)
+
+; linear interpolation of js/THREE.Vector3 objects:
+(defn v3interp [v0 v1 t]
+  (js/THREE.Vector3.
+   (finterp (.-x v0) (.-x v1) t)
+   (finterp (.-y v0) (.-y v1) t)
+   (finterp (.-z v0) (.-z v1) t)
+  )
+)
+
+; Animate an object transformation, in n steps, by interpolating
+; its quaternion, position, and scale.  If only one
+; set of q/p/s values is given, interpolate between the target's
+; current values and the given values.
+(defn anim-transform-action
+  ([target q1 p1 s1 n]  (let [q0 (js/THREE.Quaternion.)
+                              p0 (js/THREE.Vector3.)
+                              s0 (js/THREE.Vector3.)]
+                          (.decompose (.-matrix target) p0 q0 s0)
+                          (anim-transform-action target q0 p0 s0 q1 p1 s1 n)))
+  ([target q0 p0 s0 q1 p1 s1 n] (anim-transform-action target q0 p0 s0 q1 p1 s1 n 0))
+  ([target q0 p0 s0 q1 p1 s1 n t]
+       (if (>= t 1)
+         ; if t >= 1, do one last step of setting the target pos/quat/scale
+         ; exactly to p1/q1/s1
+         (fn []
+           (set! (.-quaternion target) q1)
+           (set! (.-position target) p1)
+           (set! (.-scale target) s1)
+           (.updateMatrix target)
+           (set! (.-matrixWorldNeedsUpdate target) true)
+           nil
+           )
+         (fn []
+           (set! (.-quaternion target) (.slerp q0 q1 t))
+           (set! (.-position target) (v3interp p0 p1 t))
+           (set! (.-scale target) (v3interp s0 s1 t))
+           (.updateMatrix target)
+           (set! (.-matrixWorldNeedsUpdate target) true)
+           (anim-transform-action target q0 p0 s0 q1 p1 s1 n (+ t (/ 1.0 n)))))))
+
+; animate resetting an object's position to the identity, over 100 steps
+(defn anim-reset-action [target]
+  (let [p1 (js/THREE.Vector3. 0 0 0)
+        q1 (js/THREE.Quaternion. 0 0 0 1)
+        s1 (js/THREE.Vector3. 1 1 1)]
+    (anim-transform-action target q1 p1 s1 100)))
+
+; (add-actions (anim-reset-action WORLD))
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
@@ -105,14 +159,26 @@
 ; any that return nil.  The `take-actions` function below implements this.
 
 (defn take-actions []
-  (swap! actions
-         (fn [actions] (doall (filter #(not (nil? %)) (map #(%) actions))))))
+  (let [action-taken (seq @actions)]
+    (swap! actions
+           (fn [actions] (doall (filter #(not (nil? %)) (map #(%) actions)))))
+    action-taken))
 
 ; Add one or more action funtions to the `actions` list:
 (defn add-actions [& new-actions]
   (swap! actions
          (fn [actions]
-           (apply conj (cons actions new-actions)))))
+           (apply conj (cons actions new-actions))))
+  (refresh)
+)
+
+
+(defn oneshot-transform-action [target M]
+  (fn []
+    (.multiply (.-matrix target) M)
+    (set! (.-matrixWorldNeedsUpdate target) true)
+    nil)
+)
 
 ;;;controls ; This atom determines whether the trackball controls are active; we have to disable
 ;;;controls ; them in order to take control of the camera for animating camera motions.  Not sure
@@ -130,7 +196,7 @@
 (def  eventTracker
   (js/EventTracker (.-domElement renderer)
                    #js{
-                       :mouseDrag (fn [p dp] 
+                       :mouseDrag (fn [p dp]
                                         ; Note: the axis of rotation for a mouse displacement of
                                         ; (dp.x,dp.y) would normally be (-dp.y, dp.x, 0), but
                                         ; since the y direction of screen coords is reversed
@@ -143,12 +209,13 @@
                                                            (* (.-y dp) (.-y dp))))
                                           angle (* (/ d width) js/Math.PI)
                                           R (.makeRotationAxis (js/THREE.Matrix4.) v angle)
-                                          M (.computeTransform eventTracker
-                                                               WORLD WORLD camera R)
-                                          ]
-                                      (.multiply (.-matrix WORLD) M)
-                                      (set! (.-matrixWorldNeedsUpdate WORLD) true)
-                                      ))
+                                          M (.computeTransform eventTracker WORLD WORLD camera R)]
+                                      (add-actions (oneshot-transform-action WORLD M))))
+                       :mouseWheel (fn [delta]
+                                     (let [s (js/Math.exp (/ delta 20.0))
+                                           R (.makeScale (js/THREE.Matrix4.) s s s)
+                                           M (.computeTransform eventTracker WORLD WORLD camera R)]
+                                      (add-actions (oneshot-transform-action WORLD M))))
       }))
 
 ;         function(p, dp) {
@@ -170,22 +237,37 @@
 (def  run       (fn run []
 ;;;controls                   ; update the controls:
 ;;;controls                   (if @trackballing (.update controls))
-                  (take-actions)
-                  ; re-orient any text objects to be camera-facing:
-                  ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
-                  (dorun (map #(.setFromRotationMatrix  (.-rotation %) (.-matrix camera)) @texts))
-                  ; render the scene
-                  (.render renderer scene-root camera)
-                  ; if animating, move time forward for next frame
-                  (if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
-                  ; request next frame:
-                  (js/requestAnimationFrame run)))
+                  (if (take-actions)
+                    (do
+                      ; re-orient any text objects to be camera-facing:
+                      ;(doseq [t @texts] (.setFromRotationMatrix  (.-rotation t) (.-matrix camera)))
+                      (let [M (->
+                               (js/THREE.Matrix4.)
+                               (.getInverse (.-matrix WORLD))
+                               (.multiply (.clone (.-matrix camera))))]
+                        (dorun (map #(.setFromRotationMatrix  (.-rotation %) M) @texts)))
+                      ; render the scene
+                      (.render renderer scene-root camera)
+                      ; if animating, move time forward for next frame
+                      ;(if @animating (set! (.-z (.-rotation @world)) (- (.-z (.-rotation @world)) 0.01)))
+                      ; request next frame:
+                      (js/requestAnimationFrame run)))))
+
+(defn refresh []
+  (js/requestAnimationFrame
+   (fn []
+     (let [M (->
+              (js/THREE.Matrix4.)
+              (.getInverse (.-matrix WORLD))
+              (.multiply (.clone (.-matrix camera))))]
+       (dorun (map #(.setFromRotationMatrix  (.-rotation %) M) @texts)))
+     (.render renderer scene-root camera)
+     (if (take-actions) (refresh)))))
 
   (.setSize renderer width height)
   (.setClearColor renderer 0x444455 1)
-  (.set (.-position camera) 1  -5  3)
-;  (.set (.-position camera) 0 0 5)
-  (.set (.-up camera) 0 0 1)
+  (.set (.-position camera) 0 0 8)
+  (.set (.-up camera) 0 1 0)
   (.lookAt camera (vector3 0 0 0))
   (.set (.-position light1) 100 0 0)
   (.set (.-position light2) 0 -100 0)
@@ -196,7 +278,9 @@
   (.add scene-root camera)
   (.add scene-root WORLD)
   (.add WORLD @world)
-  (run)
+  ;(add-actions (noop-action))
+  (refresh)
+
 
 
 (def v1 (geom/vector (rp2/rp2 1 1 3) { :color 0xFFFF00 }))

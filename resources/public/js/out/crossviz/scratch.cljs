@@ -29,65 +29,6 @@
 (.log js/console (.-quaternion cv/camera))
 (.log js/console (.-position cv/camera))
 
-;
-; This next sequence of things builds up to the function `anim-reset-cam-action`
-; which animates moving the camera to looking straight down the Z axis
-;
-
-; single variable linear interpolation:
-(defn finterp [x0 x1 t]
-  (+ x0 (* t (- x1 x0)))
-)
-
-; linear interpolation of js/THREE.Vector3 objects:
-(defn v3interp [v0 v1 t]
-  (js/THREE.Vector3.
-   (finterp (.-x v0) (.-x v1) t)
-   (finterp (.-y v0) (.-y v1) t)
-   (finterp (.-z v0) (.-z v1) t)
-  )
-)
-
-; basic camera animation action function - interpolate between two
-; camera position/quaternion settings, in n steps:
-(defn camanim-action
-  ([q0 p0 q1 p1 n] (camanim-action q0 p0 q1 p1 n 0))
-  ([q0 p0 q1 p1 n t]
-     (if (>= t 1)
-       ; if t >= 1, do one last step of setting the camera pos/quat
-       ; exactly to p1/q1, and return a function that turns the
-       ; trackball controls back on in the next step, then stops.
-       (do
-         (set! (.-position cv/camera) p1)
-         (set! (.-quaternion cv/camera) q1)
-         (fn []
-           ; Wait, do NOT turn trackballing back on, because the trackball
-           ; controls apparently immediately move the camera back to where it
-           ; was.  Need to figure out how to reset the controls to the new
-           ; camera settings.
-           ;(reset! cv/trackballing true)
-           nil)
-         )
-       (fn []
-         (reset! cv/trackballing false)
-         (set! (.-position cv/camera) (v3interp p0 p1 t))
-         (set! (.-quaternion cv/camera) (.slerp q0 q1 t))
-         (camanim-action q0 p0 q1 p1 n (+ t (/ 1.0 n)))
-       )
-     )
-  )
-)
-
-(defn anim-reset-cam-action []
-  (let [p0 (.clone (.-position cv/camera))
-        q0 (.clone (.-quaternion cv/camera))
-        p1 (js/THREE.Vector3. 0 0 6)
-        q1 (js/THREE.Quaternion. 0 0 0 1)]
-    (camanim-action q0 p0 q1 p1 40)))
-
-; Give this command to initiate the camera resetting action:
-(cv/add-actions (anim-reset-cam-action))
-
 
 ; This function will cause the camera to jump to the new position;
 ; trackball controls have to be turned off for this to work.
@@ -135,5 +76,5 @@
         s 0.0]
   (.decompose m p q s)
   { :position [ (.-x p) (.-y p) (.-z p) ]
-    :quaterion [ (.-x q) (.-y q) (.-z q) (.-w q)]
+    :quaternion [ (.-x q) (.-y q) (.-z q) (.-w q)]
     :scale s }))

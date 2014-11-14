@@ -1,3 +1,15 @@
+    function showMatrix(name, m) {
+        console.log(sprintf("%10s = [ %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
+                            "               %10.4f  %10.4f  %10.4f  %10.4f ]\n",
+                            name,
+                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
+                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
+                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
+                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
+    }
+
 var EventTracker = function(domElement, handler) {
 
     var mouseIsDown = false;
@@ -55,29 +67,6 @@ var EventTracker = function(domElement, handler) {
     };
     domElement.addEventListener('mousedown', mouseDown);
 	domElement.addEventListener( 'mousewheel', mouseWheel, false );
-
-    function showMatrix(name, m) {
-        console.log(sprintf("%10s = [ %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "               %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "               %10.4f  %10.4f  %10.4f  %10.4f ]\n",
-                            name,
-                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
-                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
-                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
-                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
-    }
-
-   logMatrix = function(m) {
-        console.log(sprintf("[ %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f\n" +
-                            "  %10.4f  %10.4f  %10.4f  %10.4f ]\n",
-                            m.elements[0],m.elements[4],m.elements[ 8],m.elements[12],
-                            m.elements[1],m.elements[5],m.elements[ 9],m.elements[13],
-                            m.elements[2],m.elements[6],m.elements[10],m.elements[14],
-                            m.elements[3],m.elements[7],m.elements[11],m.elements[15]));
-    };
 
     /*
      * Geomview-style transformation computation:
