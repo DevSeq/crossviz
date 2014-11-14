@@ -1,7 +1,11 @@
 $(document).ready(function() {
 
   $('#step-forward').click(function() {
-      crossviz.core.takestep();
+      crossviz.core.takeStep();
+  });
+
+  $('#reset-world').click(function() {
+      crossviz.core.resetWorld();
   });
 
 });

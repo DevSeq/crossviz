@@ -140,7 +140,9 @@
         s1 (js/THREE.Vector3. 1 1 1)]
     (anim-transform-action target q1 p1 s1 100)))
 
-; (add-actions (anim-reset-action WORLD))
+(defn resetWorld []
+  (add-actions (anim-reset-action WORLD))
+)
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
@@ -390,7 +392,7 @@
 
 (defn create-step [f] (swap! steps (fn [steps] (conj steps f))))
 
-(defn takestep []
+(defn takeStep []
   ((first @steps))
   (swap! steps (fn [steps] (rest steps))))
 

@@ -102,12 +102,8 @@
   )
 )
 
-;
-; This next sequence of things builds up to the function `anim-transform-action`
-; which animates moving an object into a given position over time
-
-; basic animation action function - interpolate between two
-; position/quaternion/scale settings, in n steps.  If only one
+; Animate an object transformation, in n steps, by interpolating
+; its quaternion, position, and scale.  If only one
 ; set of q/p/s values is given, interpolate between the target's
 ; current values and the given values.
 (defn anim-transform-action
@@ -118,8 +114,6 @@
                           (anim-transform-action target q0 p0 s0 q1 p1 s1 n)))
   ([target q0 p0 s0 q1 p1 s1 n] (anim-transform-action target q0 p0 s0 q1 p1 s1 n 0))
   ([target q0 p0 s0 q1 p1 s1 n t]
-;(.log js/console t)
-;(.log js/console q0)
        (if (>= t 1)
          ; if t >= 1, do one last step of setting the target pos/quat/scale
          ; exactly to p1/q1/s1
@@ -128,8 +122,6 @@
            (set! (.-position target) p1)
            (set! (.-scale target) s1)
            (.updateMatrix target)
-;(js/showMatrix "M" (.-matrix target))
-;           (.identity (.-matrix target))
            (set! (.-matrixWorldNeedsUpdate target) true)
            nil
            )
@@ -141,39 +133,16 @@
            (set! (.-matrixWorldNeedsUpdate target) true)
            (anim-transform-action target q0 p0 s0 q1 p1 s1 n (+ t (/ 1.0 n)))))))
 
+; animate resetting an object's position to the identity, over 100 steps
 (defn anim-reset-action [target]
   (let [p1 (js/THREE.Vector3. 0 0 0)
         q1 (js/THREE.Quaternion. 0 0 0 1)
         s1 (js/THREE.Vector3. 1 1 1)]
     (anim-transform-action target q1 p1 s1 100)))
 
-;(.log js/console (.-quaternion WORLD))
-
-; (add-actions (anim-reset-action WORLD))
-
-; (.log js/console (.-scale WORLD))
-
-; Give this command to initiate the camera resetting action:
-; (cv/add-actions (anim-reset-cam-action))
-
-
-;;;controls (defn createCameraControls [camera domElement]
-;;;controls   ; takes a THREE.js camera, and a dom element, and returns
-;;;controls   ; a TrackballControls object
-;;;controls   (let [controls (js/THREE.TrackballControls. camera domElement)
-;;;controls   ;(let [controls (three/TrackballControls camera domElement)
-;;;controls         radius   3]
-;;;controls 	(set! (.-rotateSpeed           controls)  1.0)
-;;;controls 	(set! (.-zoomSpeed             controls)  3.0)
-;;;controls 	(set! (.-panSpeed              controls)  0.2)
-;;;controls 	(set! (.-dynamicDampingFactor  controls)  0.3)
-;;;controls 	(set! (.-noZoom                controls)  false)
-;;;controls 	(set! (.-noPan                 controls)  false)
-;;;controls 	(set! (.-staticMoving          controls)  false)
-;;;controls 	(set! (.-minDistance           controls)  (* radius 1.0))
-;;;controls 	(set! (.-maxDistance           controls)  (* radius 20.0))
-;;;controls     controls)
-;;;controls )
+(defn resetWorld []
+  (add-actions (anim-reset-action WORLD))
+)
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
 ;; of the WebGL renderer) to the container immediately as soon as we define it, so that it will
@@ -423,7 +392,7 @@
 
 (defn create-step [f] (swap! steps (fn [steps] (conj steps f))))
 
-(defn takestep []
+(defn takeStep []
   ((first @steps))
   (swap! steps (fn [steps] (rest steps))))
 
