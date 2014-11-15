@@ -12,7 +12,7 @@
 
 (def add-actions)
 (def refresh)
-(def  eventTracker)
+(def eventTracker)
 
 (defn log [msg] (.log js/console msg))
 
@@ -104,24 +104,27 @@
                           (anim-transform-action target q0 p0 s0 q1 p1 s1 n)))
   ([target q0 p0 s0 q1 p1 s1 n] (anim-transform-action target q0 p0 s0 q1 p1 s1 n 0))
   ([target q0 p0 s0 q1 p1 s1 n t]
-       (if (>= t 1)
-         ; if t >= 1, do one last step of setting the target pos/quat/scale
-         ; exactly to p1/q1/s1
-         (fn []
-           (set! (.-quaternion target) q1)
-           (set! (.-position target) p1)
-           (set! (.-scale target) s1)
-           (.updateMatrix target)
-           (set! (.-matrixWorldNeedsUpdate target) true)
-           nil
-           )
-         (fn []
-           (set! (.-quaternion target) (.slerp q0 q1 t))
-           (set! (.-position target) (v3interp p0 p1 t))
-           (set! (.-scale target) (v3interp s0 s1 t))
-           (.updateMatrix target)
-           (set! (.-matrixWorldNeedsUpdate target) true)
-           (anim-transform-action target q0 p0 s0 q1 p1 s1 n (+ t (/ 1.0 n)))))))
+     {
+      :type :anim-transform
+      :func (if (>= t 1)
+              ; if t >= 1, do one last step of setting the target pos/quat/scale
+              ; exactly to p1/q1/s1
+              (fn []
+                (set! (.-quaternion target) q1)
+                (set! (.-position target) p1)
+                (set! (.-scale target) s1)
+                (.updateMatrix target)
+                (set! (.-matrixWorldNeedsUpdate target) true)
+                nil
+                )
+              (fn []
+                (set! (.-quaternion target) (.slerp q0 q1 t))
+                (set! (.-position target) (v3interp p0 p1 t))
+                (set! (.-scale target) (v3interp s0 s1 t))
+                (.updateMatrix target)
+                (set! (.-matrixWorldNeedsUpdate target) true)
+                (anim-transform-action target q0 p0 s0 q1 p1 s1 n (+ t (/ 1.0 n)))))
+      }))
 
 ; animate resetting an object's position to the identity, over 100 steps
 (defn anim-reset-action [target]
@@ -145,37 +148,95 @@
 
 (def actions (atom ()))
 
-; The `actions` has a value which is a list of functions.  Each function in this list
-; should return either another function, or nil.  On each render pass, we
-; replace each function in this list with the result calling it, eliminating
+; The `actions` atom has a value which is a list of actions.  Each action is a
+; map with keys :type and :func.  The :type of an action can be any value, and
+; is used to determine if two actions are similar.  The :func should be a function
+; that returns either another action, or nil.  On each refresh, we
+; replace each action in this list with the result calling its :func, eliminating
 ; any that return nil.  The `take-actions` function below implements this.
 
 (defn take-actions []
   (let [action-taken (seq @actions)]
     (swap! actions
-           (fn [actions] (doall (filter #(not (nil? %)) (map #(%) actions)))))
+           (fn [actions] (doall (filter #(not (nil? %)) (map #((:func %)) actions)))))
     action-taken))
 
-; Add one or more action funtions to the `actions` list:
+(defn actions-similar [a1 a2]
+  (= (:type a1) (:type a2)))
+
+(defn action-similar-to-any [a actions]
+  (some #(actions-similar a %) actions))
+
+; Add one or more actions to the `actions` list, after first removing any
+; existing actions which are "similar" to any new ones
 (defn add-actions [& new-actions]
   (swap! actions
          (fn [actions]
-           (apply conj (cons actions new-actions))))
+           (apply conj (cons
+                        (filter #(not (action-similar-to-any % new-actions)) actions)
+                        new-actions))))
   (refresh)
 )
 
 
 (defn oneshot-transform-action [target M]
-  (fn []
-    (.multiply (.-matrix target) M)
-    (set! (.-matrixWorldNeedsUpdate target) true)
-    nil)
+  {
+   :type :transform
+   :func (fn []
+           (.multiply (.-matrix target) M)
+           (set! (.-matrixWorldNeedsUpdate target) true)
+           nil)
+   }
+)
+
+(defn repeating-transform-action [target M]
+  {
+   :type :transform
+   :func (fn []
+           (.multiply (.-matrix target) M)
+           (set! (.-matrixWorldNeedsUpdate target) true)
+           (repeating-transform-action target M))
+   }
+)
+
+(defn stop-transform-action []
+  {
+   :type :transform
+   :func (fn [] nil)
+   }
 )
 
 ;;;controls ; This atom determines whether the trackball controls are active; we have to disable
 ;;;controls ; them in order to take control of the camera for animating camera motions.  Not sure
 ;;;controls ; yet how to re-enable them in a way that retains the new camera position/orientation.
 ;;;controls (def trackballing (atom true))
+
+(defn drag-rotation-matrix [dx dy button eventTracker width height moving center frame]
+  (if (= dx dy 0) nil
+      (if (= button 1)
+        (let [v     (js/THREE.Vector3. 0 0 1)
+              d     (+ dx dy)
+              angle (* (/ d width) js/Math.PI)
+              R     (.makeRotationAxis (js/THREE.Matrix4.) v angle)
+              M     (.computeTransform eventTracker moving center frame R)]
+          M)
+        (let [v     (.normalize (js/THREE.Vector3. dy dx 0))
+              d     (js/Math.sqrt (+ (* dx dx) (* dy dy)))
+              angle (* (/ d width) js/Math.PI)
+              R     (.makeRotationAxis (js/THREE.Matrix4.) v angle)
+              M     (.computeTransform eventTracker moving center frame R)]
+          M))))
+
+(defn drag-scale-matrix [delta eventTracker width height moving center frame]
+  (if (= delta 0) nil
+      (let [s (js/Math.exp (/ delta 20.0))
+            R (.makeScale (js/THREE.Matrix4.) s s s)
+            M (.computeTransform eventTracker moving center frame R)]
+        (.log js/console delta)
+        M)))
+
+
+(defn do-if-not-nil [value f] (if (not (nil? value)) (f value)))
 
 (def  renderer  (js/THREE.WebGLRenderer. #js{:antialias true}))
 (def  container (prepareContainer (.getElementById js/document "container") renderer))
@@ -188,26 +249,36 @@
 (def  eventTracker
   (js/EventTracker (.-domElement renderer)
                    #js{
-                       :mouseDrag (fn [p dp]
+                       :mouseDown (fn [p]
+                                    (add-actions (stop-transform-action)))
+                       :mouseDrag (fn [p dp button]
                                         ; Note: the axis of rotation for a mouse displacement of
                                         ; (dp.x,dp.y) would normally be (-dp.y, dp.x, 0), but
                                         ; since the y direction of screen coords is reversed
                                         ; (increasing towards the bottom of the screen), we need
                                         ; to negate the y coord here; therefore we use (dp.y,
                                         ; dp.x, 0):
-                                    (let [v (.normalize (js/THREE.Vector3. (.-y dp) (.-x dp) 0))
-                                          d (js/Math.sqrt (+
-                                                           (* (.-x dp) (.-x dp))
-                                                           (* (.-y dp) (.-y dp))))
-                                          angle (* (/ d width) js/Math.PI)
-                                          R (.makeRotationAxis (js/THREE.Matrix4.) v angle)
-                                          M (.computeTransform eventTracker WORLD WORLD camera R)]
-                                      (add-actions (oneshot-transform-action WORLD M))))
+                                    (do-if-not-nil
+                                     (drag-rotation-matrix (.-x dp) (.-y dp) button
+                                                           eventTracker
+                                                           width height
+                                                           WORLD WORLD camera)
+                                     #(add-actions (oneshot-transform-action WORLD %))))
+                       :mouseUp (fn [p dt dp button]
+                                  (if (< dt 100)
+                                    (do-if-not-nil
+                                     (drag-rotation-matrix (.-x dp) (.-y dp) button
+                                                           eventTracker
+                                                           width height
+                                                           WORLD WORLD camera)
+                                     #(add-actions (repeating-transform-action WORLD %)))))
                        :mouseWheel (fn [delta]
-                                     (let [s (js/Math.exp (/ delta 20.0))
-                                           R (.makeScale (js/THREE.Matrix4.) s s s)
-                                           M (.computeTransform eventTracker WORLD WORLD camera R)]
-                                      (add-actions (oneshot-transform-action WORLD M))))
+                                     (do-if-not-nil
+                                      (drag-scale-matrix delta
+                                                         eventTracker
+                                                         width height
+                                                         WORLD WORLD camera)
+                                     #(add-actions (oneshot-transform-action WORLD %))))
       }))
 
 (defn realign-labels-camera-facing []

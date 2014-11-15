@@ -13,7 +13,7 @@
 var EventTracker = function(domElement, handler) {
 
     var mouseIsDown = false;
-    var lastP;
+    var lastP, lastDrag, lastTime;
     
     if (typeof(handler) === "undefined") {
         handler = {};
@@ -27,6 +27,7 @@ var EventTracker = function(domElement, handler) {
     var mouseDown = function(event) {
         mouseIsDown = true;
         lastP = relCoords(event);
+        lastTime = event.timeStamp;
         if (handler.mouseDown) {
             handler.mouseDown(lastP);
         }
@@ -36,19 +37,25 @@ var EventTracker = function(domElement, handler) {
     
     var mouseMove = function(event) {
         var p = relCoords(event);
+        var t = event.timeStamp;
         if (mouseIsDown) {
+            lastDrag = { x : p.x - lastP.x, y : p.y - lastP.y };
             if (handler.mouseDrag) {
-                handler.mouseDrag(p, { x : p.x - lastP.x, y : p.y - lastP.y });
+                handler.mouseDrag(p, lastDrag, event.button);
             }
             lastP = p;
+            lastTime = t;
         }
     };
     var mouseUp = function(event) {
+        var p = relCoords(event);
+        var t = event.timeStamp;
         mouseIsDown = false;
-        lastP = relCoords(event);
         if (handler.mouseUp) {
-            handler.mouseUp(lastP);
+            handler.mouseUp(p, t - lastTime, lastDrag, event.button);
         }
+        lastP = p;
+        lastTime = t;
         window.removeEventListener('mousemove', mouseMove);
         window.removeEventListener('mouseup', mouseUp);
     };
