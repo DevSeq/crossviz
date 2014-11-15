@@ -134,7 +134,10 @@
     (anim-transform-action target q1 p1 s1 100)))
 
 (defn resetWorld []
-  (add-actions (anim-reset-action WORLD))
+  (add-actions 
+   (stop-transform-action)
+   (anim-reset-action WORLD)
+   )
 )
 
 ;; this function exists so that we can append the renderer dom element ("canvas", in the case
