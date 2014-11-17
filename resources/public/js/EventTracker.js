@@ -72,8 +72,47 @@ var EventTracker = function(domElement, handler) {
             handler.mouseWheel(delta);
         }
     };
-    domElement.addEventListener('mousedown', mouseDown);
+    var touchStart = function(event) {
+        mouseIsDown = true;
+        lastP = relCoords(event.touches[0]);
+        lastTime = event.timeStamp;
+        if (handler.mouseDown) {
+            handler.mouseDown(lastP);
+        }
+	    window.addEventListener( 'touchend',   touchEnd,   false );
+	    window.addEventListener( 'touchmove',  touchMove,  false );
+    };
+    var touchMove = function(event) {
+		event.preventDefault();
+        var p = relCoords(event.touches[0]);
+        var t = event.timeStamp;
+        if (mouseIsDown) {
+            lastDrag = { x : p.x - lastP.x, y : p.y - lastP.y };
+            if (handler.mouseDrag) {
+                handler.mouseDrag(p, lastDrag, 0);
+            }
+            lastP = p;
+            lastTime = t;
+        }
+    };
+    var touchEnd = function(event) {
+        var p = relCoords(event.touches[0]);
+        var t = event.timeStamp;
+        mouseIsDown = false;
+        if (handler.mouseUp) {
+            handler.mouseUp(p, t - lastTime, lastDrag, 0);
+        }
+        lastP = p;
+        lastTime = t;
+        window.removeEventListener('touchmove', touchMove);
+        window.removeEventListener('touchend', touchEnd);
+    };
+
+
+    domElement.addEventListener( 'mousedown',  mouseDown,  false );
 	domElement.addEventListener( 'mousewheel', mouseWheel, false );
+
+	domElement.addEventListener( 'touchstart', touchStart, false );
 
     /*
      * Geomview-style transformation computation:

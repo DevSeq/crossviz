@@ -46,6 +46,7 @@ $(document).ready(function() {
         canvas: canvas
     });
     renderer.setSize( width, height );
+    renderer.setClearColor(0x000000, 1);
 
     function makeThingy(axisLength, cubeSize, xColor, yColor, zColor, cubeColor) {
         var boxGeometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
@@ -105,9 +106,9 @@ $(document).ready(function() {
     scene.add( world );
     scene.add( camera );
 
-    var moving = camera;
+    var moving = world;
     var center = world;
-    var frame  = world;
+    var frame  = camera;
 
     var eventTracker = EventTracker(canvas, {
         mouseDown: function(p) {
