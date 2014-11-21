@@ -1,12 +1,31 @@
 (ns crossviz.core
+
   (:require [crossviz.three :as three]
             [crossviz.rp2 :as rp2]
             [crossviz.obj3 :as obj3 :refer [vector3]]
             [crossviz.geom :as geom]
             [crossviz.math :as math]
-            [crossviz.constants :as constants])
+            [crossviz.constants :as constants]
+
+            [om.core :as om :include-macros true]
+            [om.dom :as dom :include-macros true])
   (:require-macros [crossviz.macros :as mymacros])
 )
+
+(def app-state (atom {:text "Hell Chestnut No!"}))
+
+(defn main []
+  (om/root
+    (fn [app owner]
+      (reify
+        om/IRender
+        (render [_]
+          (dom/h2 nil (:text app)))))
+    app-state
+    {:target (. js/document (getElementById "om-ui"))}))
+
+;(main)
+
 
 (enable-console-print!)
 
@@ -15,6 +34,13 @@
 (def eventTracker)
 
 (defn log [msg] (.log js/console msg))
+
+(defn stop-transform-action []
+  {
+   :type :transform
+   :func (fn [] nil)
+   }
+)
 
 ; `scene-root` is the js/THREE object which gets rendered by the WebGL renderer below; it's the
 ; root object in our scene graph.
@@ -202,13 +228,6 @@
    }
 )
 
-(defn stop-transform-action []
-  {
-   :type :transform
-   :func (fn [] nil)
-   }
-)
-
 ;;;controls ; This atom determines whether the trackball controls are active; we have to disable
 ;;;controls ; them in order to take control of the camera for animating camera motions.  Not sure
 ;;;controls ; yet how to re-enable them in a way that retains the new camera position/orientation.
@@ -304,7 +323,7 @@
      (if (take-actions) (refresh)))))
 
   (.setSize renderer width height)
-  (.setClearColor renderer 0x444455 1)
+  (.setClearColor renderer constants/bgcolor 1)
   (.set (.-position camera) 0 0 8)
   (.set (.-up camera) 0 1 0)
   (.lookAt camera (vector3 0 0 0))
@@ -320,10 +339,9 @@
   (refresh)
 
 
-(def v1 (geom/vector (rp2/rp2 1 1 3) { :color 0xFFFF00 }))
-(insert-geom v1)
-
-(remove-geom v1)
+;(def v1 (geom/vector (rp2/rp2 1 1 3) { :color 0xFFFF00 }))
+;(insert-geom v1)
+;(remove-geom v1)
 
 (def disc-radius (math/sqrt (- (* constants/univDiam constants/univDiam) 1)))
 
@@ -350,7 +368,7 @@
 (def geom-line-a-label (geom/text (first (obj3/segment-endpoints rp2-a))
                                   (str (:x rp2-a) "x + " (:y rp2-a) "y + " (:z rp2-a) " = 0")
                                   ))
-(def geom-plane-a (geom/plane rp2-a { :transparent true, :color 0xFFFFFF }))
+(def geom-plane-a (geom/plane rp2-a { :transparent true, :color constants/planecolor }))
 (def geom-vector-a (geom/vector rp2-a ))
 (def geom-vector-a-label (geom/text [(:x rp2-a) (:y rp2-a) (:z rp2-a)]
                                   (str "(" (:x rp2-a) "," (:y rp2-a) "," (:z rp2-a) ")")
@@ -360,7 +378,7 @@
 (def geom-line-b-label (geom/text (first (obj3/segment-endpoints rp2-b))
                                   (str (:x rp2-b) "x + " (:y rp2-b) "y + " (:z rp2-b) " = 0")
                                   ))
-(def geom-plane-b (geom/plane rp2-b { :transparent true, :color 0xFFFFFF }))
+(def geom-plane-b (geom/plane rp2-b { :transparent true, :color constants/planecolor }))
 (def geom-vector-b (geom/vector rp2-b ))
 (def geom-vector-b-label (geom/text [(:x rp2-b) (:y rp2-b) (:z rp2-b)]
                                   (str "(" (:x rp2-b) "," (:y rp2-b) "," (:z rp2-b) ")")
@@ -379,7 +397,7 @@
 (def geom-3d-y-axis (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
 (def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
 
-(def geom-z1-disc (geom/zdisc disc-radius 1 { :color 0xFFFFFF, :transparent true }))
+(def geom-z1-disc (geom/zdisc disc-radius 1 { :color constants/planecolor, :transparent true }))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

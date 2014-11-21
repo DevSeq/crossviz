@@ -5,9 +5,9 @@
   (:require-macros [crossviz.macros :as mymacros])
 )
 
-(def default-props {:color       0x000000
+(def default-props {:color       constants/default-color
                     :transparent false    ; objects will be completely opaque by default
-                    :opacity     0.7      ; if :transparent is set to true, this opacity is used
+                    :opacity     1.0      ; if :transparent is set to true, this opacity is used
                     :linewidth   4
                     :size        0.2      ; for text, size of the text
                     :height      0.01     ; for text, height of the text
@@ -127,7 +127,7 @@
   ([string [x y z] props]
      (let [mprops (merge default-props props)
            g (js/THREE.TextGeometry. string (clj->js mprops))
-           s (js/THREE.Mesh. g (js/THREE.MeshPhongMaterial. 
+           s (js/THREE.Mesh. g (js/THREE.MeshBasicMaterial. 
                                 (clj->js (merge {:transparent false, :side THREE.DoubleSide } mprops))))]
        (.set (.-position s) x y z)
        s)))

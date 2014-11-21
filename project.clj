@@ -5,6 +5,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2202"]                 
                  [org.clojure/core.async "0.1.278.0-76b25b-alpha"]
+                 [om "0.7.3"]
                  [figwheel "0.1.2-SNAPSHOT"]]
 
   :plugins [[cider/cider-nrepl "0.7.0-SNAPSHOT"]
