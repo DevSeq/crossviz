@@ -10,3 +10,5 @@
 (def lineColor   0x000000)
 
 (def planecolor 0x555555)
+
+(def z-disc-height 0.99)

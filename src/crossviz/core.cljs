@@ -266,8 +266,9 @@
 (def  height    (.-offsetHeight container))
 (def  camera    (js/THREE.PerspectiveCamera. 45   (/ width height)   1  4000 ))
 (def  light1    (js/THREE.DirectionalLight.  0xffffff  0.5))
-(def  light2    (js/THREE.DirectionalLight.  0xffffff  0.6))
+(def  light2    (js/THREE.DirectionalLight.  0xffffff  0.7))
 (def  light3    (js/THREE.DirectionalLight.  0xffffff  0.7))
+(def  light4    (js/THREE.DirectionalLight.  0xffffff  0.7))
 (def  eventTracker
   (js/EventTracker (.-domElement renderer)
                    #js{
@@ -330,9 +331,11 @@
   (.set (.-position light1) 100 0 0)
   (.set (.-position light2) 0 -100 0)
   (.set (.-position light3) 0  100 0)
+  (.set (.-position light3) 0  0 -10)
   (.add camera light1)
   (.add camera light2)
   (.add camera light3)
+  (.add camera light4)
   (.add scene-root camera)
   (.add scene-root WORLD)
   (.add WORLD @world)
@@ -397,7 +400,8 @@
 (def geom-3d-y-axis (geom/segment3 [0 0 0] [0 2 0] { :color 0x00FF00, :linewidth 2 }))
 (def geom-3d-z-axis (geom/segment3 [0 0 0] [0 0 2] { :color 0x0000FF, :linewidth 2 }))
 
-(def geom-z1-disc (geom/zdisc disc-radius 1 { :color constants/planecolor, :transparent true }))
+(def geom-z1-disc (geom/zdisc disc-radius constants/z-disc-height
+                              { :color constants/planecolor, :transparent true }))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

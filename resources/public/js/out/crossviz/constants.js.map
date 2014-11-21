@@ -2,10 +2,11 @@
  "file":
  "/Users/mbp/Sites/crossviz/resources/public/js/out/crossviz/constants.js",
  "sources":["constants.cljs"],
- "lineCount":11,
+ "lineCount":12,
  "mappings":
- ";AAAA;;AAEA,8BAAA,9BAAKA;AAEL,mCAAA,nCAAKC;AAEL,6BAAA,7BAAKC;AAEL,iCAAA,jCAAKC;AACL,+BAAA,/BAAKC;AAEL,gCAAA,hCAAKC",
+ ";AAAA;;AAEA,8BAAA,9BAAKA;AAEL,mCAAA,nCAAKC;AAEL,6BAAA,7BAAKC;AAEL,iCAAA,jCAAKC;AACL,+BAAA,/BAAKC;AAEL,gCAAA,hCAAKC;AAEL,mCAAA,nCAAKC",
  "names":
  ["crossviz.constants/univDiam", "crossviz.constants/default-color",
   "crossviz.constants/bgcolor", "crossviz.constants/vectorColor",
-  "crossviz.constants/lineColor", "crossviz.constants/planecolor"]}
+  "crossviz.constants/lineColor", "crossviz.constants/planecolor",
+  "crossviz.constants/z-disc-height"]}

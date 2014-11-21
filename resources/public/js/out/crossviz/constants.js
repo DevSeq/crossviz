@@ -7,5 +7,6 @@ crossviz.constants.bgcolor = 0;
 crossviz.constants.vectorColor = 0;
 crossviz.constants.lineColor = 0;
 crossviz.constants.planecolor = 5592405;
+crossviz.constants.z_disc_height = 0.99;
 
 //# sourceMappingURL=constants.js.map
