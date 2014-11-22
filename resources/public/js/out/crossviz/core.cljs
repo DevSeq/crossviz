@@ -12,19 +12,31 @@
   (:require-macros [crossviz.macros :as mymacros])
 )
 
+(def takeStep)
+(def resetWorld)
+
 (def app-state (atom {:text "Hell Chestnut No!"}))
 
-(defn main []
+(defn make-om-ui []
   (om/root
     (fn [app owner]
       (reify
         om/IRender
         (render [_]
-          (dom/h2 nil (:text app)))))
+
+          ;(dom/h2 nil (:text app))
+          (dom/div nil
+                   (dom/button #js{:type "button" :id "step-forward" :className "btn btn-lg btn-default" :onClick (fn [e] (takeStep))}
+                               (dom/i #js{:className "fa fa-step-forward fa-2x"} nil))
+                   (dom/button #js{:type "button" :id "reset-world" :className "btn btn-lg btn-default" :onClick (fn [e] (resetWorld))}
+                               (dom/i #js{:className "fa fa-home fa-2x"} nil))
+                   ))))
+
     app-state
     {:target (. js/document (getElementById "om-ui"))}))
 
-;(main)
+
+(make-om-ui)
 
 
 (enable-console-print!)
@@ -254,7 +266,6 @@
       (let [s (js/Math.exp (/ delta 20.0))
             R (.makeScale (js/THREE.Matrix4.) s s s)
             M (.computeTransform eventTracker moving center frame R)]
-        (.log js/console delta)
         M)))
 
 

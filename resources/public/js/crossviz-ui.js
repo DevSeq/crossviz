@@ -1,5 +1,6 @@
 $(document).ready(function() {
 
+/*
   $('#step-forward').click(function() {
       crossviz.core.takeStep();
   });
@@ -7,5 +8,6 @@ $(document).ready(function() {
   $('#reset-world').click(function() {
       crossviz.core.resetWorld();
   });
+*/
 
 });
