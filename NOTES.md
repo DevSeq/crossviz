@@ -1,6 +1,10 @@
-Here's the current state of things, as of Fri Nov  7 12:18:32 2014.
+The steps below aren't needed for normal development --- these are
+just my notes to myself about the only way that I've figured out so
+far to get a browser REPL with this project.
 
-Workflow:
+I'd really like to figure out how to get a browser REPL going for this
+project using Emacs/CIDER.  If anyone knows how to do that, please help me!
+
 
   1. cd into this dir
   1. `lein cljsbuild auto`; leave this running during entire work session
@@ -22,5 +26,3 @@ Workflow:
      You'll need to re-execute the `ns` form at the top of the file if/when you 
      trigger a recompilation by saving one of the other cljs files in the project
      (e.g. `core.cljs`).
-
-See the comments in `scratch.js` for more info.
