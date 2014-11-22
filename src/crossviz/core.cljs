@@ -15,7 +15,7 @@
 (def takeStep)
 (def resetWorld)
 
-(def app-state (atom {:text "Hell Chestnut No!"}))
+(def app-state (atom {}))
 
 (defn make-om-ui []
   (om/root
