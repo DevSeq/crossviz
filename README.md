@@ -30,3 +30,5 @@ If you want to tinker with the source code, most of it is in the `src/crossviz` 
 The main file is `core.cljs`.
 
 To recompile, `lein cljsbuild once`, or `lein cljsbuild auto` for continuous recompilation.
+
+The file `NOTES.md` contains some out-of-date notes about 

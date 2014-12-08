@@ -15,7 +15,12 @@
 (def takeStep)
 (def resetWorld)
 
-(def app-state (atom {:text "Hell Chestnut No!"}))
+(def app-state (atom {}))
+
+(defn textChange [e]
+  (.log js/console e))
+
+;    [ 3 4 2 ]  [v] [l] [pt] [pl] [s]
 
 (defn make-om-ui []
   (om/root
@@ -26,11 +31,16 @@
 
           ;(dom/h2 nil (:text app))
           (dom/div nil
-                   (dom/button #js{:type "button" :id "step-forward" :className "btn btn-lg btn-default" :onClick (fn [e] (takeStep))}
-                               (dom/i #js{:className "fa fa-step-forward fa-2x"} nil))
-                   (dom/button #js{:type "button" :id "reset-world" :className "btn btn-lg btn-default" :onClick (fn [e] (resetWorld))}
-                               (dom/i #js{:className "fa fa-home fa-2x"} nil))
-                   ))))
+                   (dom/div #js{:className "buttons"}
+                            (dom/button #js{:type "button" :id "step-forward" :className "btn btn-lg btn-default" :onClick (fn [e] (takeStep))}
+                                        (dom/i #js{:className "fa fa-step-forward fa-2x"} nil))
+                            (dom/button #js{:type "button" :id "reset-world" :className "btn btn-lg btn-default" :onClick (fn [e] (resetWorld))}
+                                        (dom/i #js{:className "fa fa-home fa-2x"} nil)))
+                   (dom/div #js{:className "rp2-item"}
+                            (dom/input #js{ :type "text" :size 4 :onChange (fn [e] (textChange e))})
+                            (dom/input #js{ :type "checkbox" }))
+))))
+
 
     app-state
     {:target (. js/document (getElementById "om-ui"))}))
